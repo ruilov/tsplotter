@@ -91,7 +91,7 @@
 
 /* make it tiny to avoid creating scroll bars on the screen*/
 .permaLink {
-  font-size: 1; 
+  font-size: 5;
 }
 
 /* puts google chart editor on top of the layout*/
