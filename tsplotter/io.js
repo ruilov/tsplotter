@@ -126,7 +126,7 @@ function make_permalink() {
   b64 = encodeURIComponent(b64);
 
   var url = window.location.protocol + "//" + window.location.pathname + "?plot=" + b64;
-
+  console.log(window.location.host);
   return url;
 };
 
