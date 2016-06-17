@@ -22,7 +22,7 @@ class Plotter:
     self.plots = {}
     self.series_type = None
 
-    self.url = 'file://' + os.getcwd() + '/tsplotter/tsplotter.html'
+    self.url = 'file://' + os.getcwd() + '/index.html'
     system = platform.system().lower()
     if system == "linux" or system == "linux2":
       self.chrome_path = '/usr/bin/google-chrome %s'
@@ -144,7 +144,7 @@ class Plotter:
       if type(formula)==str: formulas.append({"text": formula})
       else: formulas.append(formula)
 
-    return {'type': "formulas", 'data': formulas}
+    return {'type': "parsed_formulas", 'data': formulas}
 
   def msg_chart_type(self):
     return {'type': "chart_type", 'data': self.chart_type}

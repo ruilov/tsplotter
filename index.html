@@ -22,9 +22,12 @@
     <!-- my scripts -->
     <script type="text/javascript" src="tsplotter/series.js"></script>
     <script type="text/javascript" src="tsplotter/series_tests.js"></script>
+    <script type="text/javascript" src="tsplotter/html.js"></script>
+    <script type="text/javascript" src="tsplotter/plot.js"></script>
     <script type="text/javascript" src="tsplotter/formula_area.js"></script>
     <script type="text/javascript" src="tsplotter/evaluator.js"></script>
     <script type="text/javascript" src="tsplotter/io.js"></script>
+    <script type="text/javascript" src="tsplotter/page.js"></script>
     <script type="text/javascript" src="tsplotter/tsplotter.js"></script>
   </head>
 
@@ -39,19 +42,19 @@
         </div>
 
         <div class="col-xs-5 btn-group my_group" role="group">
-          <button onclick="handleCustomizeButton()" class="btn btn-primary btn-xs button">
+          <button onclick="Page.customize_cb()" class="btn btn-primary btn-xs button">
             Chart Options
           </button>
 
-          <button onclick="handlePerma()" type="button" class="btn btn-primary btn-xs button">
+          <button onclick="copy_link_button_cb()" type="button" class="btn btn-primary btn-xs button">
             Copy Link
           </button>
 
-          <button onclick="f9_cb()" class="btn btn-primary btn-xs button">
+          <button onclick="Page.f9_cb()" class="btn btn-primary btn-xs button">
             Eval
           </button>
 
-          <button onclick="handleQuandl()" class="btn btn-primary btn-xs button">
+          <button onclick="quandl_button_cb()" class="btn btn-primary btn-xs button">
             Quandl Key
           </button>
 
@@ -59,11 +62,11 @@
             Load
           </button>
           
-          <button onclick="handleFileSave()" class="btn btn-primary btn-xs button">
+          <button onclick="file_save_button_cb()" class="btn btn-primary btn-xs button">
             Save
           </button>
 
-          <button onclick="handleHelp()" class="btn btn-primary btn-xs button">
+          <button onclick="help_button_cb()" class="btn btn-primary btn-xs button">
             Help
           </button>
         </div>
@@ -72,7 +75,7 @@
           <div class="input-group date-entry-div" style="width: 200px;">
             <input id="search-box" type="text" class="form-control" placeholder="data search">
             <span class="input-group-btn">
-              <button onclick="handleSearch()" class="btn btn-default glyphicon glyphicon-search search_button"></button>
+              <button onclick="search_button_cb()" class="btn btn-default glyphicon glyphicon-search search_button"></button>
             </span>
           </div>
         </div>

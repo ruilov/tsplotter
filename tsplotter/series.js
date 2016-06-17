@@ -1,16 +1,16 @@
 function parseDate(dateStr) {
   var parts = dateStr.split('-');
   return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
-};
+}
 
 function dateToStr(dt) {
-  var yyyy = dt.getFullYear().toString()
+  var yyyy = dt.getFullYear().toString();
   var mm = (dt.getMonth()+1).toString();
   if(mm.length==1) mm = "0" + mm;
   var dd = dt.getDate().toString();
   if(dd.length==1) dd = "0" + dd;
   return yyyy + "-" + mm + "-" + dd;
-};
+}
 
 function floatToStr(x) {
   return x.toString();
@@ -26,7 +26,7 @@ Array.prototype.sum = function() {
 
 Array.prototype.average = function() {
   return this.sum() / this.length;
-}
+};
 
 Array.prototype.variance = function() {
   var avg = this.average();
@@ -44,29 +44,29 @@ Array.prototype.covariance = function(a2) {
 function make_series(map) {
   var s = new Series();
   s.map = map;
-  var keys = _.keys(map)
+  var keys = _.keys(map);
   if(keys.length>0) 
-    s.type = type_of_value(keys[0]);
+    s.type = _type_of_value(keys[0]);
   return s;
-};
+}
 
-function type_of_value(x) {
-  if(isFinite(parseDate(x))) return "date"
-  if(!isNaN(parseFloat(x))) return "float"
+function _type_of_value(x) {
+  if(isFinite(parseDate(x))) return "date";
+  if(!isNaN(parseFloat(x))) return "float";
   throw "Unknonw type: " + x;
-};
+}
 
 function _parse_func(type) {
   if(type=="date") return parseDate;
   if(type=="float") return parseFloat;
   throw "Unknonw type: " + type;
-};
+}
 
 function _toStr_func(type) {
   if(type=="date") return dateToStr;
   if(type=="float") return floatToStr;
   throw "Unknonw type: " + type;
-};
+}
 
 function _cast_num_func(type) {
   if(type=="date") return function(x) {return Math.round(x.getTime()/(3600000*24));};
@@ -75,57 +75,57 @@ function _cast_num_func(type) {
 }
 
 function parse_value(x) {
-  var type = type_of_value(x);
+  var type = _type_of_value(x);
   var func = _parse_func(type);
   return func(x);
-};
+}
 
 function valueToStr(x) {
   if(x instanceof  Date) return _toStr_func("date")(x);
   if(typeof(x)=="number") return _toStr_func("float")(x);
   throw "Unknonw type: " + typeof(x) + " of " + x;
-};
+}
 
 class Series {
   constructor() {
     this.map = {};
     this.type = "date";
-  };
+  }
 
   parse_func() {
     return _parse_func(this.type);
-  };
+  }
 
   toStr_func() {
     return _toStr_func(this.type);
-  };
+  }
 
   cast_num_func() {
     return _cast_num_func(this.type);
-  };
+  }
 
   put(x,y) {
     if(typeof(x)!="string") throw "not a string: " + x;
-    var x_type = type_of_value(x);
+    var x_type = _type_of_value(x);
     if(this.isEmpty()) this.type = x_type;
-    else if(this.type!=x_type) throw "Unmatched series types: " + this.type + " and " + x_type
+    else if(this.type!=x_type) throw "Unmatched series types: " + this.type + " and " + x_type;
     this.map[x] = y;
-  };
+  }
 
   getX(x) {
     if(x in this.map) return this.map[x];
     return null;
-  };
+  }
 
   isEmpty() {
-    return Object.keys(this.map).length==0;
-  };
+    return Object.keys(this.map).length===0;
+  }
 
   clone() {
     var map = {};
     for(var x in this.map) map[x] = this.map[x];
     return make_series(map);
-  };
+  }
 
   range(sx,ex) {
     var ans = {};
@@ -133,9 +133,9 @@ class Series {
     for(var x in this.map) {
       var x2 = f(x);
       if(x2>=sx && x2<= ex) ans[x] = this.map[x];
-    };
+    }
     return make_series(ans);
-  };
+  }
 
   asSortedArray() {
     var dataArr = [];
@@ -145,7 +145,7 @@ class Series {
       
     dataArr.sort(function(a,b) {return a[0]-b[0];});
     return dataArr;
-  };
+  }
 
   subgenerator(w,otherSeries) {
     var arr = this.asSortedArray();
@@ -163,15 +163,15 @@ class Series {
           elem.push(otherSeries.map[x]);
           if(!isNaN(elem[1]) && !isNaN(elem[2])) {
             subArr.push(elem);
-          };
-        };
+          }
+        }
       } else {
         if(!isNaN(elem[1])) {
           subArr.push(elem);
-        };
-      };
+        }
+      }
       si++;
-    };
+    }
 
     if(subArr.length<w) return;
 
@@ -187,21 +187,21 @@ class Series {
             subArr.splice(0,1);
             subArr.push(elem);
             ans.push(subArr.slice());
-          };
-        };
+          }
+        }
       } else {
         if(!isNaN(elem[1])) {
           subArr.splice(0,1);
           subArr.push(elem);
           ans.push(subArr.slice());
-        };
-      };
+        }
+      }
 
       si++;
-    };
+    }
 
     return ans;
-  };
+  }
 
   cumgenerator(otherSeries) {
     var arr = this.asSortedArray();
@@ -218,18 +218,18 @@ class Series {
           if(!isNaN(elem[1]) && !isNaN(elem[2])) {
             subArr.push(elem);
             ans.push(subArr.slice());
-          };
-        };
+          }
+        }
       } else {
         if(!isNaN(elem[1])) {
           subArr.push(elem);
           ans.push(subArr.slice());
-        };
-      };
-    };
+        }
+      }
+    }
     return ans;
-  };
-};
+  }
+}
 
 Series.prototype.isSeries = true;
 
@@ -239,16 +239,16 @@ function make_constant_series(num,sd,ed) {
     var dt = new Date(sd.getTime());
     for(; dt <= ed; dt.setDate(dt.getDate() + 1))
       map[dateToStr(dt)] = num;
-  };
+  }
 
   if(typeof(sd)=="number") {
     var map = {};
     for(var idx = sd; idx <= ed; idx++)
       map[floatToStr(idx)] = num;
-  };
+  }
 
   return make_series(map);
-};
+}
 
 math.typed.addType({
   name: 'Series',
@@ -427,7 +427,7 @@ var indFunc = math.typed('ind', {
 var lastFunc = math.typed("last",{
   'Series': function(s) {
     var arr = s.asSortedArray();
-    if(arr.length==0) return s;
+    if(arr.length===0) return s;
     var val = arr[arr.length-1][1];
 
     var ans = {};
@@ -439,7 +439,7 @@ var lastFunc = math.typed("last",{
 var firstFunc = math.typed("first",{
   'Series': function(s) {
     var arr = s.asSortedArray();
-    if(arr.length==0) return s;
+    if(arr.length===0) return s;
     var val = arr[0][1];
     
     var ans = {};
@@ -451,7 +451,7 @@ var firstFunc = math.typed("first",{
 var supFunc = math.typed('sup', {
   'Series': function (s) {
     var arr = s.asSortedArray();
-    if(arr.length==0) return s;
+    if(arr.length===0) return s;
     
     var ans = {};
     var toStr_func = s.toStr_func();
@@ -459,7 +459,7 @@ var supFunc = math.typed('sup', {
     for(var i=0; i<arr.length; i++) {
       sup = Math.max(sup,arr[i][1]);
       ans[toStr_func(arr[i][0])] = sup;
-    };
+    }
     return make_series(ans);
   },
 });
@@ -467,7 +467,7 @@ var supFunc = math.typed('sup', {
 var infFunc = math.typed('inf', {
   'Series': function (s) {
     var arr = s.asSortedArray();
-    if(arr.length==0) return s;
+    if(arr.length===0) return s;
     
     var ans = {};
     var toStr_func = s.toStr_func();
@@ -475,7 +475,7 @@ var infFunc = math.typed('inf', {
     for(var i=0; i<arr.length; i++) {
       sup = Math.min(sup,arr[i][1]);
       ans[toStr_func(arr[i][0])] = sup;
-    };
+    }
     return make_series(ans);
   },
 });
@@ -487,14 +487,14 @@ function funcOnGenerator(generator,calcFunc,toStr_func) {
   for(var sub of generator)
     ans[toStr_func(sub[sub.length-1][0])] = calcFunc(sub.getColumn(1));
   return make_series(ans);
-};
+}
 
 function constructStd(generator,toStr_func) {
   var calcFunc = function(values) {
     return Math.sqrt(values.variance());
   };
   return funcOnGenerator(generator,calcFunc,toStr_func);
-};
+}
 
 var stdFunc = math.typed('std',{
   'Series, number, string': function(s,w,preFunc) {
@@ -518,7 +518,7 @@ function constructAvg(generator,toStr_func) {
     return values.average();
   };
   return funcOnGenerator(generator,calcFunc,toStr_func);
-};
+}
 
 var avgFunc = math.typed('avg',{
   'Series, number': function(s,w) {
@@ -534,7 +534,7 @@ function constructCum(generator,toStr_func) {
     return _.reduce(values,function(x,y) {return x+y;},0);
   };
   return funcOnGenerator(generator,calcFunc,toStr_func);
-};
+}
 
 var cumFunc = math.typed('cum',{
   'Series, number': function(s,w) {
@@ -555,7 +555,7 @@ var dFunc = math.typed('d',{
     for(var sub of s.subgenerator(w+1)) {
       var val = sub[w][1] - sub[0][1];
       ans[f(sub[sub.length-1][0])] = val;
-    };
+    }
     return make_series(ans);
   },
 });
@@ -570,7 +570,7 @@ var rFunc = math.typed('r',{
     for(var sub of s.subgenerator(w+1)) {
       var val = sub[w][1] / sub[0][1];
       ans[f(sub[sub.length-1][0])] = val;
-    };
+    }
     return make_series(ans);
   },
 });
@@ -598,9 +598,9 @@ function constructCorr(generator,toStr_func) {
     var variance2 = col2.variance();
     var covariance = col1.covariance(col2);
     ans[toStr_func(sub[sub.length-1][0])] = covariance / Math.sqrt(variance1*variance2);
-  };
+  }
   return make_series(ans);
-};
+}
 
 function align_series(s1,s2,preFunc) {
     var m1 = {};
@@ -609,8 +609,8 @@ function align_series(s1,s2,preFunc) {
       if(x in s2.map) {
         m1[x] = s1.map[x];
         m2[x] = s2.map[x];
-      };
-    };
+      }
+    }
     var e1 = math.eval(preFunc,{"x": make_series(m1)});
     var e2 = math.eval(preFunc,{"x": make_series(m2)});
     return [e1,e2];
@@ -664,7 +664,7 @@ var lagFunc = math.typed('lag',{
     for(var i = Math.abs(lag); i < arr.length; i++) {
       if(lag>0) ans[toStr_func(arr[i][0])] = arr[i-lag][1];
       else ans[toStr_func(arr[i+lag][0])] = arr[i][1];
-    };
+    }
     return make_series(ans);
   },
 });
@@ -683,21 +683,21 @@ var subSampleFunc = math.typed('subsample',{
 var interpolateFunc = math.typed('interpolate',{
   'Series, Series': function(s1,s2) {
     var a1 = s1.asSortedArray();
-    if(a1.length==0) return math.divide(s2,0); // return error
+    if(a1.length===0) return math.divide(s2,0); // return error
     if(a1.length==1) {
       return math.add(math.multiply(s2,0),a1[0][1]);
-    };
+    }
     
     var xs = a1.getColumn(0);
     var ys = a1.getColumn(1);
 
-    ans = {}
+    ans = {};
     var parse_func = s2.parse_func();
     for(var x in s2.map) {
       var parsedX = parse_func(x);
       var idx = _.sortedIndex(xs,parsedX);
 
-      if(idx==0) idx += 1;
+      if(idx===0) idx += 1;
       if(idx==xs.length) idx -= 1;
 
       var prevX = xs[idx-1];
@@ -710,7 +710,7 @@ var interpolateFunc = math.typed('interpolate',{
       else interpVal = (nextY - prevY) / (nextX - prevX) * (parsedX - prevX) + prevY
 
       ans[x] = interpVal;
-    };
+    }
     return make_series(ans);
   },
 });
@@ -778,8 +778,8 @@ var condFunc = math.typed('cond',{
     for(var x in s1.map) {
       if(x in s2.map && x in s3.map) { 
         ans[x] = s1.map[x]? s2.map[x] : s3.map[x];
-      };
-    };
+      }
+    }
     return make_series(ans);
   },
   'Series, number, Series': function(s1,n,s3) {
@@ -787,8 +787,8 @@ var condFunc = math.typed('cond',{
     for(var x in s1.map) {
       if(x in s3.map) { 
         ans[x] = s1.map[x]? n : s3.map[x];
-      };
-    };
+      }
+    }
     return make_series(ans);
   },
   'Series, Series, number': function(s1,s2,n) {
@@ -796,15 +796,15 @@ var condFunc = math.typed('cond',{
     for(var x in s1.map) {
       if(x in s2.map) { 
         ans[x] = s1.map[x]? s2.map[x] : n;
-      };
-    };
+      }
+    }
     return make_series(ans);
   },
   'Series, number, number': function(s1,n1,n2) {
     var ans = {};
     for(var x in s1.map) {
       ans[x] = s1.map[x]? n1 : n2;
-    };
+    }
     return make_series(ans);
   }
 });
@@ -815,8 +815,8 @@ var zapFunc = math.typed('zap',{
     for(var x in s1.map) {
       if(x in s2.map && !s1.map[x]) { 
         ans[x] = s2.map[x];
-      };
-    };
+      }
+    }
     return make_series(ans);
   },
 });
@@ -865,7 +865,7 @@ var boundsFunc = math.typed('bounds',{
     for(var x in s.map) {
       var xn = cast_num_func(parse_func(x));
       if(xn>=sx && xn<=ex) ans[x] = s.map[x];
-    };
+    }
     return make_series(ans);
   },
 });
@@ -883,7 +883,7 @@ var trendFunc = math.typed('trend',{
     for(var elem of arr) {
       var dx = cast_num_func(elem[0]) - x0;
       map[toStr_func(elem[0])] = dx;
-    };
+    }
     var a = make_series(map);
 
     // calculate the beta
@@ -953,10 +953,10 @@ var to_import = {
 // this allows every function to be called with a number as a first argument, and the number is converted to a series
 var make_num_to_series_transform = function(f) {
   f.transform = function() {
-    if(arguments.length==0) return f();
+    if(arguments.length===0) return f();
 
     if(typeof arguments[0] == 'number') 
-      arguments[0] = make_constant_series(arguments[0],evaluator.start,evaluator.end);
+      arguments[0] = make_constant_series(arguments[0],thePage.evaluator.start,thePage.evaluator.end);
 
     // apply doesn't seem to work. Why not?
     if(arguments.length==1) return f(arguments[0]);

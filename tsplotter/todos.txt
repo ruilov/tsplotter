@@ -1,7 +1,10 @@
 todos:
 
+- make a script that is the only place allowed to interact with the html
+- online version always needs a key. Tell user about that in app and user manual
+- make python api work with online version
+- get rid of global variables
 - load csvs
-- give a warning when user doesn't use a key
 - display which data is loaded
 - Docs: 
   - python api

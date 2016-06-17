@@ -10,9 +10,9 @@ function series_equal(a,b) {
     var bNaN = isNaN(b.map[k]);
     if(aNaN!=bNaN) return false;
     if(Math.abs(a.map[k]-b.map[k]) > 1e-10) return false;
-  };
+  }
   return true;
-};
+}
 
 function run_tests() {
   var s1 = new Series();
