@@ -31,8 +31,12 @@ function file_save_button_cb() {
 
   // fixme: online the socket is null, and we can't even set onerror!
   var socket = websocket_connect("9001");
-  socket.onopen = onopen;
-  socket.onerror = onerror;
+  if(socket===null) {
+    onerror();
+  } else {
+    socket.onopen = onopen;
+    socket.onerror = onerror;
+  }
 }
 
 function websocket_message(message, e, do_f9) {
@@ -76,5 +80,6 @@ function websocket_connect(port) {
   } catch (err) {
     console.log("failed to start websockets");
     console.log(err);
+    return null;
   }
 }
