@@ -3,8 +3,6 @@ class Page {
   constructor() {
     this.formula_area = new FormulaArea();
     this.evaluator = new Evaluator(this.formula_area);
-
-    
   }
 
   google_charts_loaded() {
