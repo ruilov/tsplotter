@@ -26,7 +26,7 @@ function show_chart() {
 function show_key_warning(calls) {
   var elem = document.getElementById("key_warning");
   elem.innerHTML = "Warning! You have " + Math.max(50-calls,0) + "/50 quandl calls left today. " +
-  "Please consider creating a <a href=\"user_manual.html#key\">quandl</a> account.";
+  "Please consider creating a <a href=\"tsplotter/user_manual.html#key\">quandl</a> account.";
   elem.style.visibility = "visible";
 };
 
@@ -259,7 +259,7 @@ function handleSearch() {
 };
 
 function handleHelp() {
-  var url = "user_manual.html";
+  var url = "tsplotter/user_manual.html";
   var win = window.open(url, '_blank');
   win.focus();
 };
