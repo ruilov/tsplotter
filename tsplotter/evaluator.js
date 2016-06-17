@@ -330,6 +330,7 @@ class Evaluator {
       if(!url) return;  // means we couldn't parse the symbol
 
       // check if the user is using a key, and log usage if not so that we can warn the user
+      console.log(["key",quandl_api_key]);
       if(quandl_api_key="") {
         var calls = this.unkeyed_calls + 1;
         this.unkeyed_calls = calls;
