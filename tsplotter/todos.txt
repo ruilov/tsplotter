@@ -1,0 +1,11 @@
+todos:
+
+- load csvs
+- give a warning when user doesn't use a key
+- display which data is loaded
+- Docs: 
+  - python api
+  - google chart types
+- stats on the plot
+- time plots
+- functions to load forwards, vols, rates

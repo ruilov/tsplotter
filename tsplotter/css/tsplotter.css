@@ -1,0 +1,100 @@
+/* undoing some bootstrap settings that mess up the google chart editor */
+* {
+  border-collapse: separate;
+  box-sizing: unset;
+}
+
+.ui-layout-pane {
+  border: 0;
+  padding: 0;
+}
+
+/* bootstrap defaults row margins to -15 */
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.google-visualization-charteditor-dialog {
+  width: 150%;
+  height: 120%;
+}
+
+.date-entry-div {
+  width: 120px;
+  padding: 0px;
+  margin-top: 3px;
+  margin-left: 3px;
+}
+
+.date-entry-div > input {
+  height: 26px;
+  font-size: 18px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.formula-area {
+  border: 0;
+  height: 50%;
+  width: 100%;
+}
+
+.button {
+  margin-top: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.my_group {
+  margin-left: 50px;
+}
+
+.search_button {
+  height: 15px; 
+  margin-top: -2px;
+  padding-top: 3px;
+}
+
+.logo {
+  float: right;
+  margin-right: 15px;
+}
+
+.icon {
+  float: right;
+  margin-right: 6px;
+  margin-top: 11px;
+}
+
+.thePlot {
+  width: 100%; 
+  height: 100%;
+  z-index: -2;
+}
+
+.plotError {
+  margin-top: -150px;
+  align: center;
+  width: 100%;
+  color: red;
+}
+
+.keyWarning {
+  color: #FF0000;
+  font-size: 20px;
+  margin-left: 10px;
+  position: absolute;
+  z-index: 1;
+  visibility: hidden;
+}
+
+/* make it tiny to avoid creating scroll bars on the screen*/
+.permaLink {
+  font-size: 1; 
+}
+
+/* puts google chart editor on top of the layout*/
+.modal-dialog {
+  z-index: 3;
+}

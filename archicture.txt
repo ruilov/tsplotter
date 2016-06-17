@@ -1,0 +1,27 @@
+
+========== TSPLOTTER =======
+
+global variables:
+  - evaluator
+  - formula_area
+  - thePlot
+  - default_chart_options
+
+
+tsplotter.js is the starting point javascript file, and creates those global variables. This file more or less controls the UI. It modifies the DOM as needed, and is the one that constructs the google chart (thePlot). A very important function is the f9_cb(), which is what evaluates the whole thing. This file also sets up the layout of the page, which uses jquery UI layout plug-in (http://layout.jquery-dev.com/demos.cfm)
+
+evaluator.js: the evaluator is responsible for evaluating the formulas, making quandl data requests as needed and caching the results. It's entry point is the evaluate function, which makes quandly calls. eval_fn is where the actual evaluation takes place using math.js. Note that the evaluator can make changes to the formula_area, for example by setting the colors of evaluated functions. There's a hack in its use of math.js in that quandl data is stored as symbol_dict. When the user writes a formula symbol["tag"], math.js actually looks up symbol_dict["tag"]. The evaluator will also put the value of symbol in the scope, using its db_default_tags configuration.
+
+formula_area.js: the formula_area represents the bottom of the screen. It's responsible for parsing the text html and constructing a parsed version of the formulas the user has entered, including properties like "color", "hidden", "title", etc. It also responds to ctrl commands. Formula area uses a simple library called jquery.cleditor.
+
+io.js: this handles file load/save, as well as sockets. Sockets are used for 2 purposes. (a) file save, which is handle by a simple python server, (b) the python api
+
+series.js: this is the main data type, and the functions implemented here are added to the math.js module. See the user manual for further documentation. Regression tests in series_tests.js, which is loaded in the main tsplotter.html
+
+google charts: primarily handled by tsplotter.js. Uses a feature called a chart editor, which has an ugle UI for the user to set options and the chart type. Note that when the user chooses some types, the data can be modified. Eg for histograms the x values are modified into strings.
+
+The python API is able to open a chrome page, and communicate data to it using websockets. This is handled in websocker_server.py and in io.js. The socket is opened immediately when the page opens. If the user opens the html page without python, the websocket will fail to open, and that's ok.
+
+======= PRICER =======
+
+Main functions are to parse mkt data from the CME, and implements a simple vol surface construction.

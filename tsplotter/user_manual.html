@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <title>tsplotter help</title>
+    <link rel="stylesheet" type="text/css" href="css/user_manual.css"/>
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
+    <basefont size="4">
+  </head>
+
+  <body>
+    <div id="container">
+    <div id="title"><center>tsplotter help</center></div>
+      <div id="sidebar">
+        <a href="#overview">Overview</a><br>
+        <a href="#quandl">Quandl</a><br>
+        <a href="#commands">Commands</a><br>
+        <a href="#send">Send/Save/Load</a><br>
+        <a href="#functions">Functions</a><br>
+        <a href="#examples">Examples</a><br>
+      </div>
+      <div id="main">
+        <h1><center id="overview">Overview</center></h1>
+        <b>tsplotter</b> is a tool that allows intuitive and interactive manipulation of data. If you'd like to jump right in, see the <a href="#examples">examples</a> section.
+        <br><br>
+        Please email me at <a href="mailto:ruilov@gmail.com">ruilov@gmail.com</a> for questions or comments. Testing and support done primarily in Mac + Chrome.
+        <br><br>
+        <b>tsplotter</b> includes:
+        <ul>
+          <li>connectivity to external <a href="#quandl">databases</a>, with a lot of historical data: stocks, interest rates, commodities, financials, economic.
+          <li>a simple <a href="#send">publishing mechanism</a> for your plots.</li>
+          <li>a concise python API.</li>
+          <li>built-in <a href="#functions">quantitative features</a>: correlation, volatility, trends, etc.</li>
+        </ul>
+        In <b>tsplotter</b> you write formulas like in a spreadhseet, but your formulas manipule entire data series at once. Examples of formulas: <code>series*2</code> or <code>(series1+series2)/2</code>, and you see results on the screen right away.
+      
+        <br><br>
+        <h1><center id="quandl">Quandl</center></h1>
+
+        <b>tsplotter</b> gets its data from <a href="https://quandl.com">quandl.com</a>. Quandl is a website that offers a large amount of free and paid data. For convinience a search box is available in <b>tsplotter</b>. The quandl website also offers good <a href="https://www.quandl.com/search">search</a> and <a href="https://www.quandl.com/browse">browsing</a> functionality. 
+        <br><br>
+        <b><font id="key" color="red">Note that quandl limits data usage</font></b>. It's recommended that you create a free account to increase your limit to 50,000 calls per day (it's only 50 / day without an account). Once you sign up to quandl, generate a key <a href="https://www.quandl.com/account/api">here</a>, copy-paste it into the "Quandl key" button in <b>tsplotter</b>, and you're all set.
+        <br><br>
+        Quandl is organized into databases. Each database has multiple symbols, each symbol has multiple series. To use quandl data in <b>tsplotter</b>, use the following syntax:
+        <center><pre>DATABASE|SYMBOL["series"]</pre></center>
+        For the largest databases <b>tsplotter</b> assumes a default series name. For example, to plot historical Apple sotck prices use either <code>WIKI|AAPL["Settle"]</code> or simply <code>WIKI|AAPL</code>.
+
+        <br><br>
+        <a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7InRleHQiOiIiLCJ0aXRsZSI6InN0b2NrcyJ9LHsiY29sb3IiOiJyZ2IoNTEsIDEwMiwgMjA0KSIsInRleHQiOiJXSUtJfFhPTSIsInRpdGxlIjoiRXh4b24gc3RvY2sgcHJpY2UgV0lLSXxHUyJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiV0lLSXxHUyIsInRpdGxlIjoiR29sZG1hbiBTYWNocyBTdG9jayBwcmljZSJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiR09PR3xOWVNFX1NQWSIsInRpdGxlIjoiU1BZIEVURiJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiWUFIT098SU5ERVhfR1NQQyIsInRpdGxlIjoiU1BYIGluZGV4In0seyJvZmYiOnRydWUsInRleHQiOiJDQk9FfFZJWFtcIlZJWCBDbG9zZVwiXSIsInRpdGxlIjoiVklYIGluZGV4In0seyJvZmYiOnRydWUsInRleHQiOiJZQUhPT3xJTkRFWF9CVlNQIiwidGl0bGUiOiJicmF6aWxpYW4gQm92ZXNwYSAoaW4gJHJlYWwpIn0seyJvZmYiOnRydWUsInRleHQiOiJHT09HfE5ZU0VfRVdaIiwidGl0bGUiOiJicmF6aWxpYW4gRVRGIChpbiBVU0QpIn0seyJ0ZXh0IjoiIiwidGl0bGUiOiJmb3JlaWduIGV4Y2hhbmdlIn0seyJvZmYiOnRydWUsInRleHQiOiJCT0V8WFVETEI4S0wiLCJ0aXRsZSI6IkJSTC9VU0QifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkJPRXxYVURMRVJEIiwidGl0bGUiOiJVU0QvRVVSIn0seyJvZmYiOnRydWUsInRleHQiOiJCT0V8WFVETEFERCIsInRpdGxlIjoiVVNEL0FVRCJ9LHsidGV4dCI6IiIsInRpdGxlIjoiaW50ZXJlc3QgcmF0ZXMifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkZSRUR8REZGIiwidGl0bGUiOiJmZWQgZnVuZHMgcmF0ZSJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiRlJFRHxVU0QzTVREMTU2TiIsInRpdGxlIjoiMyBtb250aCBsaWJvciJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiRlJFRHxVU0Q2TVREMTU2TiIsInRpdGxlIjoiNiBtb250aCBsaWJvciJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiRlJFRHxEVEIzIiwidGl0bGUiOiIzIG1vbnRoIHRyZWFzdXJpZXMifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IlVTVFJFQVNVUll8WUlFTERbXCIzIE1PXCJdIiwidGl0bGUiOiIzIG1vbnRoIHRyZWFzdXJpZXMifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkZSRUR8REdTNSIsInRpdGxlIjoiNSB5ZWFyIHRyZWFzdXJpZXMifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IlVTVFJFQVNVUll8WUlFTERbXCI1IFlSXCJdIiwidGl0bGUiOiI1IHllYXIgdHJlYXN1cmllcyJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiRlJFRHxEU1dQNSIsInRpdGxlIjoiNSB5ZWFyIHN3YXAgcmF0ZSJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiRlJFRHxEU1dQMzAiLCJ0aXRsZSI6IjMwIHllYXIgc3dhcCByYXRlIn0seyJ0ZXh0IjoiIiwidGl0bGUiOiJjb21tb2RpdGllcyJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiSUNFfFRaMjAxNiIsInRpdGxlIjoiRGVjIDIwMTYgV1RJIGNvbnRyYWN0In0seyJvZmYiOnRydWUsInRleHQiOiJJQ0V8QloyMDE2IiwidGl0bGUiOiJEZWMgMjAxNiBCcmVudCBjb250cmFjdCJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiQ0hSSVN8Q01FX0NMMyIsInRpdGxlIjoiM3JkIG5lYXJieSBXVEkgY29udHJhY3QifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkNIUklTfENNRV9DWTMiLCJ0aXRsZSI6IjNyZCBuZWFyYnkgQnJlbnQgY29udHJhY3QifSx7Im9mZiI6dHJ1ZSwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoiTEJNQXxHT0xEW1wiVVNEIChBTSlcIl0ifSx7InRleHQiOiIiLCJ0aXRsZSI6ImVjb25vbWljIn0seyJvZmYiOnRydWUsInRleHQiOiJGUkVEfEdEUCIsInRpdGxlIjoiVVMgR0RQICgkQiwgc2Vhc29uYWxseSBhZGopIn0seyJvZmYiOnRydWUsInRleHQiOiJGUkVEfENQSUFVQ1NMIiwidGl0bGUiOiJVUyBDUEkgKDE5ODItODQ9MTAwLCBzZWFzb25hbGx5IGFkaikifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkZSRUR8VU5SQVRFIiwidGl0bGUiOiJVUyB1bmVtcGxveW1lbnQifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkpPREl8T0lMX0NSUFJLRF9XT1JMRCIsInRpdGxlIjoiV29ybGQgY3J1ZGUgcHJvZHVjdGlvbiAoa2IpIn0seyJvZmYiOnRydWUsInRleHQiOiJFSUF8U1RFT19DT1BSUFVTX00iLCJ0aXRsZSI6IlVTIGNydWRlIHByb2R1Y3Rpb24gKGtiKSJ9LHsib2ZmIjp0cnVlLCJ0ZXh0IjoiSk9ESXxPSUxfQ1JQUktEX1VTQSIsInRpdGxlIjoiVVMgY3J1ZGUgcHJvZHVjdGlvbiAoa2IpIn0seyJvZmYiOnRydWUsInRleHQiOiJKT0RJfE9JTF9DUlBSS0RfU0FVIiwidGl0bGUiOiJTYXVkaSBjcnVkZSBwcm9kdWN0aW9uIChrYikifSx7Im9mZiI6dHJ1ZSwidGV4dCI6IkpPREl8R0FTX0dDUFJfVVNBIiwidGl0bGUiOiJVUyBnYXMgcHJvZHVjdGlvbiJ9LHsidGV4dCI6IiIsInRpdGxlIjoiY3JlZGl0In0seyJvZmYiOnRydWUsInRleHQiOiJNT09EWXxEQkFBWUxEIiwidGl0bGUiOiJCQUEgY29ycG9yYXRlIHlpZWxkIn1dLCJzdGFydCI6IjIwMTYtMDYtMDEiLCJlbmQiOiIyMDE2LTA2LTIyIiwiY2hhcnRfdHlwZSI6IkxpbmVDaGFydCIsImNoYXJ0X29wdGlvbnMiOnsibGVnZW5kIjp7InBvc2l0aW9uIjoiYm90dG9tIn0sImludGVycG9sYXRlTnVsbHMiOnRydWUsInZBeGlzIjp7InZpZXdXaW5kb3dNb2RlIjoibWF4aW1pemVkIn0sInNlcmllcyI6eyIwIjp7ImNvbG9yIjoiIzMzNjZDQyJ9fSwiZXhwbG9yZXIiOnsiYWN0aW9ucyI6WyJkcmFnVG9ab29tIiwicmlnaHRDbGlja1RvUmVzZXQiXSwiYXhpcyI6Imhvcml6b250YWwiLCJrZWVwSW5Cb3VuZHMiOnRydWV9LCJjaGFydEFyZWEiOnsid2lkdGgiOiI5MCUiLCJoZWlnaHQiOiI4MCUifX19">Here</a> is a sample of data that's available in quandl.
+
+      <br><br>
+      <h1><center id="commands">Commands</center></h1>
+      Keyboard shortuts for the most common functionality:
+      <ul>
+        <li><b>Plot</b>: F9. Evaluates and plots your formulas.</li>
+        <li><b>Turn off a formula</b>: CTRL+B. The formula won't be evaluated at all.</li>
+        <li><b>Hide a formula</b>: CTRL+H. The formula will still be evaluated, but not shown. Useful for formulas that define new symbols.</li>
+        <li><b>Toggle secondary axis for a formula</b>: CTRL+T.</li>
+        <li><b>Clear colors</b>: CTRL-ALT-C. New colors will be assigned on a new F9.</li>
+        <li><b>Manually color a formula</b>: use the color wheel.</li>
+      </ul>
+
+      <br>
+      <h1><center id="send">Send / Save / Load</center></h1>
+      To send your plot to someone else simply press the "Copy Link" button at the top of the page. This link is public and can be accessed by anyone else.
+      <br><br>
+      However this method only works if your plot was created via the webpage. If instead you created the plot via the python API, you will need to Save your plot, send to your friend, who can Load it into <b>tsplotter</b>.
+      <br><br>
+      There's two modes of saving. If you're running the python script Server.py, you will be prompted for a file name and location. If the server is not running, the file will be saved into your web downloads directory.
+      <br>
+      <h1><center id="functions">Functions</center></h1>
+
+      <ul>
+        <li>the usual arithmetic operators <code>+, -, *, /, ^</code> are used for adding, subtracting, multiplying, dividing, exponentiating a series by another, or by a number. Only x coordinates that appear in both series are used.</li>
+
+        <li>Create your own  symbols using <code>=</code>. Those symbols can be used in latter formulas in the same plot. For example: <code>a = WIKI|AAPL + 1</code>.</li>
+
+        <li>a number represents a series of constant value (with every x coordinate).</li>
+
+        <li><code>abs(series)</code>: takes the absolute value of each coordinate.</li>
+
+        <li><code>lag(series,lag=number|optional)</code>: lags the series by the specified number of coordinates, that is, it shifts values to the right if lag > 0, and to the left if lag < 0. Default lag = 1. Useful for, for example, computing changes. Example: <code>a-lag(a)</code></li>
+
+        <li><code>subsample(series,frequency)</code>: samples 1 point in every "frequency" points, starting with the first. Useful for calculating, for example, weekly returns: <code>subsample(r(a,5),5)</code></li>
+
+        <li><code>interpolate(series1, series2)</code>: returns a series with the same dates as series2, and values taken from series1, using linear interpolation (and extrapolation) to fill in the blanks.</li>
+
+        <li><code>greater(series or number, series or number)</code>: takes the max of the value in each series, keeping only the common dates.</li>
+
+        <li><code>lesser(series or number, series or number)</code>: takes the min of the value in each series, keeping only the common dates.</li>
+
+        <li><code>sup(series)</code>: takes the cummulative maximum of the series.</li>
+
+        <li><code>inf(series)</code>: takes the cummulative minimum of the series</li>
+
+        <li><code>log(series,base=number|optional)</code>: takes the log of each value in the series. base = e by default.</li>
+
+        <li><code>ind(series)</code>: divides every value in the series by its first value. Useful for plotting multiple series in the same axis.</li>
+
+        <li><code>last(series)</code> or <code>first(series)</code>: sets every value in the series to its last / first value.</li>
+
+        <li><code>std(series,window=number|optional)</code>: std dev of the last 'window' points of the series (looking back), or cummulative if no window provided.</li>
+
+        <li><code>avg(series,window=number|optional)</code>: average of the last 'window' points of the series (looking back), or cummulative if no window provided.</li>
+
+        <li><code>cum(series,window=number|optional)</code>: sum of the last 'window' points of the series (looking back), or cummulative if no window provided.</li>
+
+        <li><code>d(series,window=number|optional)</code>: difference between first and last points in a window (looking back). window default = 1. Equivalent to series - lag(series,window).</li>
+
+        <li><code>r(series,window=number|optional)</code>: ratio between first and last points in a window (looking back). window default = 1. Equivalent to series / lag(series,window)</li>
+
+        <li><code>vol(series,window=number|optional)</code>: volatility of the series, defined as std dev of returns from one point to the next, over the window (looking back), or cummulative if no window provided.</li>
+
+        <li><code>corr(series1,series2,window=number|optional,function=string|optional)</code>: correlation of the return from one point of the series to the next, over the window (looking back), or cummulative if no window provided. Only x values that appear in both series are returned. The returns calculation is done on the remaining points. A different returns function can be passed in and should use 'x' to stand for the series. The default function is "x". "r(x)", "log(r(x))" and "d(x)" are some possible alternatives.</li>
+
+        <li><code>beta(series1,series2,window=number|optional,function=string|optional)</code>: calculates the regression slope of series2 with respect to series1. The arguments work similarly to the corr function.</li>
+
+        <li><code>trend(series)</code>: calculates the linear trend of the series.</li>
+
+        <li><code>if(condition,series1 or number1,series2 or number2)</code>: condition is a series that can be defined by comparing two other series (or numbers) with the symbols == (equals), < or >. For each date that appears in all series, when the conditional is true take the value of series1, otherwise take the value of series2.</li>
+
+        <li><code>zap(condition,series)</code>: throw away values of series for which the condition is true.</li>
+
+        <li><code>union(series1,series2)</code>: joins the two series, keeping the value of series1 where they intersect.</li>
+
+        <li><code>dx(series,window=number|optional)</code>: returns the diference in the x-coordinates between one point and the next. The values of the series are not used.</li>
+
+        <li><code>bounds(series,string1|number1,string2|number2)</code>: restricts the series to the x coordinates >= string1|number1 and <= string2|number2. Example bounds: 10.5, "10.5", 2016-01-01".</li>
+      </ul>
+
+      <br>
+      <h1><center id="examples">Examples</center></h1>
+
+      <ul>
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6InJlc2VydiA9IEJQfE9JTF9SRVNFUlZFU19XUkxEW1wiVmFsdWVcIl0iLCJ0aXRsZSI6ImluIGJpbGxpb24gb2YgYmJscyJ9LHsiaGlkZGVuIjp0cnVlLCJjdXJzb3IiOnRydWUsInRleHQiOiJwcm9kID0gQlB8T0lMX1BST0RfRF9XUkxEW1wiVmFsdWVcIl0iLCJ0aXRsZSI6ImluIGsgYmJscyBwZXIgZGF5In0seyJjb2xvciI6InJnYig1MSwgMTAyLCAyMDQpIiwidGV4dCI6InJlc2VydiAvIHByb2QqMWU2LzM2NSIsInRpdGxlIjoieWVhcnMgb2Ygd29ybGQgb2lsIHJlc2VydmVzIn1dLCJzdGFydCI6IjE5NzAtMDEtMDEiLCJlbmQiOiIyMDE2LTA2LTIyIiwiY2hhcnRfdHlwZSI6IkxpbmVDaGFydCIsImNoYXJ0X29wdGlvbnMiOnsiY2hhcnRBcmVhIjp7IndpZHRoIjoiOTAlIiwiaGVpZ2h0IjoiODAlIn0sImhBeGlzIjp7InVzZUZvcm1hdEZyb21EYXRhIjp0cnVlLCJ2aWV3V2luZG93Ijp7Im1pbiI6bnVsbCwibWF4IjpudWxsfSwibWluVmFsdWUiOm51bGwsIm1heFZhbHVlIjpudWxsLCJ2aWV3V2luZG93TW9kZSI6ImV4cGxpY2l0In0sImxlZ2FjeVNjYXR0ZXJDaGFydExhYmVscyI6dHJ1ZSwibGVnZW5kIjp7InBvc2l0aW9uIjoiYm90dG9tIn0sInNlcmllcyI6eyIwIjp7ImNvbG9yIjoiIzMzNjZjYyJ9fSwidkF4ZXMiOlt7InRpdGxlIjpudWxsLCJtaW5WYWx1ZSI6bnVsbCwibWF4VmFsdWUiOm51bGwsInVzZUZvcm1hdEZyb21EYXRhIjp0cnVlLCJ2aWV3V2luZG93Ijp7Im1heCI6bnVsbCwibWluIjpudWxsfX0seyJ1c2VGb3JtYXRGcm9tRGF0YSI6dHJ1ZSwidmlld1dpbmRvdyI6eyJtYXgiOm51bGwsIm1pbiI6bnVsbH0sIm1pblZhbHVlIjpudWxsLCJtYXhWYWx1ZSI6bnVsbH1dLCJjdXJ2ZVR5cGUiOiIiLCJib29sZWFuUm9sZSI6ImNlcnRhaW50eSIsImxpbmVXaWR0aCI6MiwiaW50ZXJwb2xhdGVOdWxscyI6dHJ1ZSwidkF4aXMiOnsidmlld1dpbmRvd01vZGUiOiJtYXhpbWl6ZWQifSwiZXhwbG9yZXIiOnsiYWN0aW9ucyI6WyJkcmFnVG9ab29tIiwicmlnaHRDbGlja1RvUmVzZXQiXSwiYXhpcyI6Imhvcml6b250YWwiLCJrZWVwSW5Cb3VuZHMiOnRydWV9fX0%3D">World oil reserves in years</a></li>
+
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6InJlYWxfZ2RwID0gRlJFRHxHRFAgLyBGUkVEfENQSUFVQ1NMIn0seyJjb2xvciI6InJnYig1MSwgMTAyLCAyMDQpIiwidGV4dCI6Imdyb3d0aF9hbm51YWwgPSAocihzdWJzYW1wbGUocmVhbF9nZHAsNCkpLTEpKjEwMCIsInRpdGxlIjoiZ2RwIGdyb3d0aCJ9LHsiY29sb3IiOiJyZ2IoMjIwLCA1NywgMTgpIiwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoiaW50ZXJwb2xhdGUoRlJFRHxVTlJBVEUsZ3Jvd3RoX2FubnVhbCkiLCJ0aXRsZSI6InVuZW1wbG95bWVudCJ9XSwic3RhcnQiOiIxOTk1LTAxLTAxIiwiZW5kIjoiMjAxNi0wNi0yMiIsImNoYXJ0X3R5cGUiOiJMaW5lQ2hhcnQiLCJjaGFydF9vcHRpb25zIjp7ImxlZ2VuZCI6eyJwb3NpdGlvbiI6ImJvdHRvbSJ9LCJpbnRlcnBvbGF0ZU51bGxzIjp0cnVlLCJ2QXhpcyI6eyJ2aWV3V2luZG93TW9kZSI6Im1heGltaXplZCJ9LCJzZXJpZXMiOnsiMCI6eyJjb2xvciI6IiMzMzY2Y2MifSwiMSI6eyJjb2xvciI6IiNkYzM5MTIifX0sImV4cGxvcmVyIjp7ImFjdGlvbnMiOlsiZHJhZ1RvWm9vbSIsInJpZ2h0Q2xpY2tUb1Jlc2V0Il0sImF4aXMiOiJob3Jpem9udGFsIiwia2VlcEluQm91bmRzIjp0cnVlfSwiY2hhcnRBcmVhIjp7IndpZHRoIjoiOTAlIiwiaGVpZ2h0IjoiODAlIn19fQ%3D%3D">GDP alongside with unemployment</a></li>
+
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoiYSA9IEZSRUR8R0RQIiwidGl0bGUiOiJnZHAifSx7ImNvbG9yIjoicmdiKDIyMCwgNTcsIDE4KSIsInRleHQiOiJwcmV2aW91c190cmVuZCA9IGludGVycG9sYXRlKHRyZW5kKGJvdW5kcyhhLFwiMjAwMC0wMS0wMVwiLFwiMjAwNy0wNy0wMVwiKSksYSkiLCJ0aXRsZSI6InByZSJ9LHsiY29sb3IiOiJyZ2IoMjU1LCAxNTMsIDApIiwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoibmV3X3RyZW5kID0gdHJlbmQoYm91bmRzKGEsXCIyMDA5LTA3LTAxXCIsXCIyMDE3LTAxLTAxXCIpKSIsInRpdGxlIjoicG9zdCJ9XSwic3RhcnQiOiIyMDAyLTAxLTAxIiwiZW5kIjoiMjAxNi0wNi0yMiIsImNoYXJ0X3R5cGUiOiJMaW5lQ2hhcnQiLCJjaGFydF9vcHRpb25zIjp7ImxlZ2VuZCI6eyJwb3NpdGlvbiI6ImJvdHRvbSJ9LCJpbnRlcnBvbGF0ZU51bGxzIjp0cnVlLCJ2QXhpcyI6eyJ2aWV3V2luZG93TW9kZSI6Im1heGltaXplZCJ9LCJzZXJpZXMiOnsiMCI6eyJjb2xvciI6IiMzMzY2Y2MifSwiMSI6eyJjb2xvciI6IiNkYzM5MTIifSwiMiI6eyJjb2xvciI6IiNmZjk5MDAifX0sImV4cGxvcmVyIjp7ImFjdGlvbnMiOlsiZHJhZ1RvWm9vbSIsInJpZ2h0Q2xpY2tUb1Jlc2V0Il0sImF4aXMiOiJob3Jpem9udGFsIiwia2VlcEluQm91bmRzIjp0cnVlfSwiY2hhcnRBcmVhIjp7IndpZHRoIjoiOTAlIiwiaGVpZ2h0IjoiODAlIn19fQ%3D%3D">GDP trend before and after 2008</a></li>
+
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImEgPaBZQUhPT3xJTkRFWF9HU1BDIiwidGl0bGUiOiJzcHggaW5kZXgifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImIgPaBDQk9FfFZJWFtcIlZJWCBDbG9zZVwiXSIsInRpdGxlIjoidml4In0seyJoaWRkZW4iOnRydWUsInRleHQiOiJuID0gNSJ9LHsiY29sb3IiOiJyZ2IoNTEsIDEwMiwgMjA0KSIsInRleHQiOiJiZXRhKGEsYixuLFwicih4KVwiKSJ9LHsiY29sb3IiOiJyZ2IoMjIwLCA1NywgMTgpIiwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoiY29ycihhLGIsbixcInIoeClcIikgKiBzdGQocihiKSxuKSAvIHN0ZChyKGEpLG4pIn1dLCJzdGFydCI6IjIwMTUtMDEtMDEiLCJlbmQiOiIyMDE2LTA2LTIyIiwiY2hhcnRfdHlwZSI6IkxpbmVDaGFydCIsImNoYXJ0X29wdGlvbnMiOnsibGVnZW5kIjp7InBvc2l0aW9uIjoiYm90dG9tIn0sImludGVycG9sYXRlTnVsbHMiOnRydWUsInZBeGlzIjp7InZpZXdXaW5kb3dNb2RlIjoibWF4aW1pemVkIn0sInNlcmllcyI6eyIwIjp7ImNvbG9yIjoiIzMzNjZDQyJ9LCIxIjp7ImNvbG9yIjoiI0RDMzkxMiJ9fSwiZXhwbG9yZXIiOnsiYWN0aW9ucyI6WyJkcmFnVG9ab29tIiwicmlnaHRDbGlja1RvUmVzZXQiXSwiYXhpcyI6Imhvcml6b250YWwiLCJrZWVwSW5Cb3VuZHMiOnRydWV9LCJjaGFydEFyZWEiOnsid2lkdGgiOiI5MCUiLCJoZWlnaHQiOiI4MCUifX19">Manually calculate a regression beta and compare to the <code>beta</code> function provided</a></li>
+
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoiYSA9oFlBSE9PfElOREVYX0dTUEMiLCJ0aXRsZSI6InNweCBpbmRleCJ9LHsiY29sb3IiOiJyZ2IoMjIwLCA1NywgMTgpIiwidGV4dCI6InRyZW5kKGEpIn0seyJoaWRkZW4iOnRydWUsInRleHQiOiJ4ID0gY3VtKGR4KGEpKSJ9LHsiY29sb3IiOiJyZ2IoMjU1LCAxNTMsIDApIiwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoibGFzdChiZXRhKHgsYSkpKih4LWxhc3QoYXZnKHgpKSkgKyBsYXN0KGF2ZyhhKSkifV0sInN0YXJ0IjoiMjAxNS0wMS0wMSIsImVuZCI6IjIwMTYtMDYtMjIiLCJjaGFydF90eXBlIjoiTGluZUNoYXJ0IiwiY2hhcnRfb3B0aW9ucyI6eyJsZWdlbmQiOnsicG9zaXRpb24iOiJib3R0b20ifSwiaW50ZXJwb2xhdGVOdWxscyI6dHJ1ZSwidkF4aXMiOnsidmlld1dpbmRvd01vZGUiOiJtYXhpbWl6ZWQifSwic2VyaWVzIjp7IjAiOnsiY29sb3IiOiIjMzM2NkNDIn0sIjEiOnsiY29sb3IiOiIjREMzOTEyIn0sIjIiOnsiY29sb3IiOiIjRkY5OTAwIn19LCJleHBsb3JlciI6eyJhY3Rpb25zIjpbImRyYWdUb1pvb20iLCJyaWdodENsaWNrVG9SZXNldCJdLCJheGlzIjoiaG9yaXpvbnRhbCIsImtlZXBJbkJvdW5kcyI6dHJ1ZX0sImNoYXJ0QXJlYSI6eyJ3aWR0aCI6IjkwJSIsImhlaWdodCI6IjgwJSJ9fX0%3D">Manually calculate a trend and compare to the <code>trend</code> function provided</a></li>
+
+        <li>In March 2014 Google went through a corporate re-organiziation, which changed its stock price. The Yahoo database has not adjusted for that. <a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoiZ29vZyA9IFlBSE9PfEdPT0cifSx7ImhpZGRlbiI6dHJ1ZSwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoiYmVmb3JlID0gYm91bmRzKGdvb2csXCIyMDAwLTAxLTAxXCIsXCIyMDE0LTAzLTI2XCIpIn0seyJoaWRkZW4iOnRydWUsInRleHQiOiJhZnRlciA9IGJvdW5kcyhnb29nLFwiMjAxNC0wMy0yN1wiLFwiMjEwMC0wMS0wMVwiKSJ9LHsiaGlkZGVuIjp0cnVlLCJ0ZXh0IjoiYmVmb3JlX2FkaiA9IGJlZm9yZSAqIGludGVycG9sYXRlKGZpcnN0KGFmdGVyKSxiZWZvcmUpIC8gbGFzdChiZWZvcmUpIn0seyJjb2xvciI6InJnYigyMjAsIDU3LCAxOCkiLCJ0ZXh0IjoidW5pb24oYmVmb3JlX2FkaixhZnRlcikifV0sInN0YXJ0IjoiMjAxMy0wMS0wMSIsImVuZCI6IjIwMTYtMDYtMjIiLCJjaGFydF90eXBlIjoiTGluZUNoYXJ0IiwiY2hhcnRfb3B0aW9ucyI6eyJsZWdlbmQiOnsicG9zaXRpb24iOiJib3R0b20ifSwiaW50ZXJwb2xhdGVOdWxscyI6dHJ1ZSwidkF4aXMiOnsidmlld1dpbmRvd01vZGUiOiJtYXhpbWl6ZWQifSwic2VyaWVzIjp7IjAiOnsiY29sb3IiOiIjMzM2NkNDIn0sIjEiOnsiY29sb3IiOiIjREMzOTEyIn19LCJleHBsb3JlciI6eyJhY3Rpb25zIjpbImRyYWdUb1pvb20iLCJyaWdodENsaWNrVG9SZXNldCJdLCJheGlzIjoiaG9yaXpvbnRhbCIsImtlZXBJbkJvdW5kcyI6dHJ1ZX0sImNoYXJ0QXJlYSI6eyJ3aWR0aCI6IjkwJSIsImhlaWdodCI6IjgwJSJ9fX0%3D">This plot</a> adjusts for it manually</li>
+
+        <li>Does the Brazilian ETF (EWZ) give you exposure to simply the BRL or something else?
+          <ol>
+            <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoicihCT0V8WFVETEI4S0wpIn0seyJjb2xvciI6InJnYigyMjAsIDU3LCAxOCkiLCJjdXJzb3IiOnRydWUsInRleHQiOiJyKEdPT0d8TllTRV9FV1opIn1dLCJzdGFydCI6IjIwMTMtMDEtMDEiLCJlbmQiOiIyMDE2LTA2LTIyIiwiY2hhcnRfdHlwZSI6IlNjYXR0ZXJDaGFydCIsImNoYXJ0X29wdGlvbnMiOnsiY2hhcnRBcmVhIjp7IndpZHRoIjoiOTAlIiwiaGVpZ2h0IjoiODAlIn0sImhBeGlzIjp7InVzZUZvcm1hdEZyb21EYXRhIjp0cnVlLCJtaW5WYWx1ZSI6bnVsbCwibWF4VmFsdWUiOm51bGwsInZpZXdXaW5kb3ciOnsibWluIjpudWxsLCJtYXgiOm51bGx9LCJ0aXRsZSI6InIoQk9FfFhVRExCOEtMKSIsInZpZXdXaW5kb3dNb2RlIjoiZXhwbGljaXQifSwibGVnYWN5U2NhdHRlckNoYXJ0TGFiZWxzIjp0cnVlLCJsZWdlbmQiOnsicG9zaXRpb24iOiJib3R0b20ifSwic2VyaWVzIjp7IjAiOnsiY29sb3IiOiIjZGMzOTEyIiwicG9pbnRTaXplIjoyfSwiLTEiOnsiY29sb3IiOiIjMzM2NmNjIiwicG9pbnRTaXplIjoyfX0sInZBeGVzIjpbeyJ0aXRsZSI6bnVsbCwibWluVmFsdWUiOm51bGwsIm1heFZhbHVlIjpudWxsLCJ1c2VGb3JtYXRGcm9tRGF0YSI6dHJ1ZSwidmlld1dpbmRvdyI6eyJtYXgiOm51bGwsIm1pbiI6bnVsbH19LHsidXNlRm9ybWF0RnJvbURhdGEiOnRydWUsInZpZXdXaW5kb3ciOnsibWF4IjpudWxsLCJtaW4iOm51bGx9LCJtaW5WYWx1ZSI6bnVsbCwibWF4VmFsdWUiOm51bGx9XSwibGluZVdpZHRoIjowLCJib29sZWFuUm9sZSI6ImNlcnRhaW50eSIsInBvaW50U2l6ZSI6NywiaW50ZXJwb2xhdGVOdWxscyI6dHJ1ZSwidkF4aXMiOnsidmlld1dpbmRvd01vZGUiOiJtYXhpbWl6ZWQifSwiZXhwbG9yZXIiOnsiYWN0aW9ucyI6WyJkcmFnVG9ab29tIiwicmlnaHRDbGlja1RvUmVzZXQiXSwiYXhpcyI6Imhvcml6b250YWwiLCJrZWVwSW5Cb3VuZHMiOnRydWV9LCJ0cmVuZGxpbmVzIjp7IjAiOnsidHlwZSI6ImxpbmVhciIsInBvaW50U2l6ZSI6MCwidmlzaWJsZUluTGVnZW5kIjp0cnVlLCJsaW5lV2lkdGgiOjIsIm9wYWNpdHkiOjAuNCwibGFiZWxJbkxlZ2VuZCI6bnVsbCwic2hvd1IyIjp0cnVlLCJkZWdyZWUiOjJ9fX19">Scatter plot looks pretty well correlated</a></li>
+            
+            <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImhpZGRlbiI6dHJ1ZSwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoibiA9IDEwIiwidGl0bGUiOiJudW1iZXIgb2YgZGF0YSBwb2ludHMgd2UnbGwgdXNlIGZvciBvdXIgcnVubmluZyB3aW5kb3cifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImJybF9yZXR1cm5zID0gbG9nKHIoQk9FfFhVRExCOEtMKSkifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImV3el9yZXR1cm5zID0gbG9nKHIoaW50ZXJwb2xhdGUoR09PR3xOWVNFX0VXWixicmxfcmV0dXJucykpKSIsInRpdGxlIjoidXNlIGludGVycG9sYXRlIHRvIGFsaWduIHRoZSBkYXRlcyBvZiB0aGUgMiBzZXJpZXMifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImJldCA9IGJldGEoYnJsX3JldHVybnMsZXd6X3JldHVybnMsbikifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImJldCA9IGludGVycG9sYXRlKGxhc3QoYXZnKGJldCkpLGJybF9yZXR1cm5zKSIsInRpdGxlIjoia2VlcCBhIHNpbmdsZSBhdmVyYWdlIGJldGEuIEl0J3MgYXJvdW5kIC0xLjEifSx7ImhpZGRlbiI6dHJ1ZSwidGV4dCI6ImV3el9yZXR1cm5zX2FkaiA9IGV3el9yZXR1cm5zIC0gYmV0ICogYnJsX3JldHVybnMifSx7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoiYXZnKHN0ZChld3pfcmV0dXJuc19hZGosbikpIC8gYXZnKHN0ZChld3pfcmV0dXJucyxuKSxuKSJ9XSwic3RhcnQiOiIyMDE1LTAxLTAxIiwiZW5kIjoiMjAxNi0wNi0yMiIsImNoYXJ0X3R5cGUiOiJMaW5lQ2hhcnQiLCJjaGFydF9vcHRpb25zIjp7ImxlZ2VuZCI6eyJwb3NpdGlvbiI6ImJvdHRvbSJ9LCJpbnRlcnBvbGF0ZU51bGxzIjp0cnVlLCJ2QXhpcyI6eyJ2aWV3V2luZG93TW9kZSI6Im1heGltaXplZCJ9LCJzZXJpZXMiOnsiMCI6eyJjb2xvciI6IiMzMzY2Y2MifX0sImV4cGxvcmVyIjp7ImFjdGlvbnMiOlsiZHJhZ1RvWm9vbSIsInJpZ2h0Q2xpY2tUb1Jlc2V0Il0sImF4aXMiOiJob3Jpem9udGFsIiwia2VlcEluQm91bmRzIjp0cnVlfSwiY2hhcnRBcmVhIjp7IndpZHRoIjoiOTAlIiwiaGVpZ2h0IjoiODAlIn19fQ%3D%3D">Remove the BRL component from the EWZ. How much of its standard deviation is left?</a> The plot shows an average of 85%, meaning that after we remove the BRL component, the standard deviation goes down by 15%. This means that the EWZ is giving you exposure to something that's primarily not the BRL, despite the first plot that shows a good correlation between them.</li>
+          </ol>
+        </li>
+        
+        <li><a href="tsplotter.html?plot=eyJwYXJzZWRfZm9ybXVsYXMiOlt7ImNvbG9yIjoicmdiKDUxLCAxMDIsIDIwNCkiLCJ0ZXh0IjoiYSA9IEVJQXxTVEVPX0NPUFJQVVNfTSJ9LHsiY29sb3IiOiJyZ2IoMjIwLCA1NywgMTgpIiwiY3Vyc29yIjp0cnVlLCJ0ZXh0IjoiaW50ZXJwb2xhdGUoYSxhdmcoMSkpIn1dLCJzdGFydCI6IjIwMTYtMDEtMDEiLCJlbmQiOiIyMDE2LTA2LTIyIiwiY2hhcnRfdHlwZSI6IlRhYmxlIiwiY2hhcnRfb3B0aW9ucyI6eyJjaGFydEFyZWEiOnsid2lkdGgiOiI5MCUiLCJoZWlnaHQiOiI4MCUifSwiaEF4aXMiOnsidXNlRm9ybWF0RnJvbURhdGEiOnRydWUsInZpZXdXaW5kb3ciOnsibWluIjpudWxsLCJtYXgiOm51bGx9LCJtaW5WYWx1ZSI6bnVsbCwibWF4VmFsdWUiOm51bGwsInZpZXdXaW5kb3dNb2RlIjoiZXhwbGljaXQifSwibGVnYWN5U2NhdHRlckNoYXJ0TGFiZWxzIjp0cnVlLCJsZWdlbmQiOnsicG9zaXRpb24iOiJib3R0b20ifSwic2VyaWVzIjp7IjAiOnsiY29sb3IiOiIjMzM2NmNjIn0sIjEiOnsiY29sb3IiOiIjZGMzOTEyIn19LCJ2QXhlcyI6W3sidGl0bGUiOm51bGwsIm1pblZhbHVlIjpudWxsLCJtYXhWYWx1ZSI6bnVsbCwidXNlRm9ybWF0RnJvbURhdGEiOnRydWUsInZpZXdXaW5kb3ciOnsibWF4IjpudWxsLCJtaW4iOm51bGx9fSx7InVzZUZvcm1hdEZyb21EYXRhIjp0cnVlLCJ2aWV3V2luZG93Ijp7Im1heCI6bnVsbCwibWluIjpudWxsfSwibWluVmFsdWUiOm51bGwsIm1heFZhbHVlIjpudWxsfV0sImJvb2xlYW5Sb2xlIjoiY2VydGFpbnR5IiwiaW50ZXJwb2xhdGVOdWxscyI6dHJ1ZSwidkF4aXMiOnsidmlld1dpbmRvd01vZGUiOiJtYXhpbWl6ZWQifSwiZXhwbG9yZXIiOnsiYWN0aW9ucyI6WyJkcmFnVG9ab29tIiwicmlnaHRDbGlja1RvUmVzZXQiXSwiYXhpcyI6Imhvcml6b250YWwiLCJrZWVwSW5Cb3VuZHMiOnRydWV9LCJ3aWR0aCI6IjEwMCUiLCJoZWlnaHQiOiIxMDAlIn19">Trick for getting a daily version of a series</a></li>
+      </ul>
+    </div>
+  </body>
+</html>
