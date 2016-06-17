@@ -125,8 +125,7 @@ function make_permalink() {
   var b64 = btoa(json);
   b64 = encodeURIComponent(b64);
 
-  var url = window.location.protocol + "//" + window.location.pathname + "?plot=" + b64;
-  console.log(window.location.host);
+  var url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?plot=" + b64;
   return url;
 };
 
