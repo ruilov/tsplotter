@@ -137,6 +137,7 @@ class Plot {
 
     this.set_options(chartOptions);
     this.googlePlot.draw();
+    HTML.cursor_style("default");
   }
 
   // if includeDates=True, the first column will be the dates, otherwise the data table won't have the dates at all

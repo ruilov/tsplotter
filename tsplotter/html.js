@@ -59,12 +59,17 @@ class HTML {
     return document.getElementById("error_message");
   }
 
+  static cursor_style(style) {
+    $('body').css("cursor",style);
+  }
+
   static show_error(message) {
     var chart = HTML.chart_elem();
     chart.style.visibility = "hidden";
     var errMsg = HTML._error_message_elem();
     errMsg.style.visibility = "visible";
     errMsg.innerHTML = message;
+    HTML.cursor_style("default");
   }
 
   static show_chart() {

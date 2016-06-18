@@ -45,8 +45,8 @@ class Page {
       return;
     }
 
-    var tt = this;
-    this.evaluator.evaluate(function(f) {tt.plot.plot(f);}, HTML.show_error);
+    HTML.cursor_style("progress");
+    this.evaluator.evaluate(f => this.plot.plot(f), HTML.show_error);
   }
 
   customize_cb() {
