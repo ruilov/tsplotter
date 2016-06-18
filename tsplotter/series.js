@@ -904,6 +904,12 @@ var trendFunc = math.typed('trend',{
   },
 });
 
+var daily = math.typed('daily',{
+  '': function() {
+    return 1;
+  }
+});
+
 // extend the existing functions with support for Series
 var to_import = {
   unaryMinus: unaryMinusFunc,
@@ -948,6 +954,7 @@ var to_import = {
   bounds: boundsFunc,
   beta: betaFunc,
   trend: trendFunc,
+  daily: daily,
 };
 
 // this allows every function to be called with a number as a first argument, and the number is converted to a series
