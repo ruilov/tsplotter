@@ -1,13 +1,7 @@
 class Evaluator {
 
-  // ===== CONSTRUCTION ======
-  constructor(formula_area) {
-    this.formula_area = formula_area;
-    this.cached_datasets = {};
-    this.error_messages = [];
-    this.additional_scope = {};
-
-    this.db_default_tags = {
+  static get db_default_tags() {
+    return {
       "WIKI": "Adj. Close",
       "CME": "Settle",
       "ICE": "Settle",
@@ -20,8 +14,10 @@ class Evaluator {
       "BOE": "Value",
       "MOODY": "VALUE",
     };
+  }
 
-    this.color_defaults = [
+  static get color_defaults() {
+    return [
       "#3366CC",
       "#DC3912",
       "#FF9900",
@@ -43,6 +39,19 @@ class Evaluator {
       "#5574A6",
       "#3B3EAC"
     ];
+  }
+
+  // ===== CONSTRUCTION ======
+  constructor(formula_area) {
+    this.formula_area = formula_area;
+    this.cached_datasets = {};
+    this.error_messages = [];
+    this.additional_scope = {};
+    
+    var d = new Date();
+    this.end = dateToStr(d);
+    d.setFullYear(d.getFullYear()-2);
+    this.start = dateToStr(d);
   }
 
   // ===== GETTERS ======
@@ -227,19 +236,19 @@ class Evaluator {
 
       // first try to find one that hasn't been used
       var found = false;
-      for (var ii = 0; ii < this.color_defaults.length; ii++) {
-        var jj = (color_idx + ii) % this.color_defaults.length;
-        var pcolor = this.color_defaults[jj];
+      for (var ii = 0; ii < Evaluator.color_defaults.length; ii++) {
+        var jj = (color_idx + ii) % Evaluator.color_defaults.length;
+        var pcolor = Evaluator.color_defaults[jj];
         if (!(pcolor.toLowerCase() in colors_used)) {
           found = true;
           formulas[idx].color = pcolor;
-          color_idx = (jj + 1) % this.color_defaults.length;
+          color_idx = (jj + 1) % Evaluator.color_defaults.length;
           break;
         }
       }
       if (!found) {
-        formulas[idx].color = this.color_defaults[color_idx];
-        color_idx = (color_idx + 1) % this.color_defaults.length;
+        formulas[idx].color = Evaluator.color_defaults[color_idx];
+        color_idx = (color_idx + 1) % Evaluator.color_defaults.length;
       }
 
       colors_used[formulas[idx].color.toLowerCase()] = 1;
@@ -253,8 +262,8 @@ class Evaluator {
     for (var symbol of thisSymbols) {
       if (!(symbol in this.scope)) {
         var database = this.symbol_database(symbol);
-        if (database in this.db_default_tags) {
-          var val = this.cached_datasets[symbol].data2[this.db_default_tags[database]];
+        if (database in Evaluator.db_default_tags) {
+          var val = this.cached_datasets[symbol].data2[Evaluator.db_default_tags[database]];
           if (val) this.scope[symbol] = val.range(this.start, this.end);
         }
       }
