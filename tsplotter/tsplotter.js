@@ -44,7 +44,7 @@ function help_button_cb() {
 // called after google charts and jquery DOM are ready
 function init() {
   websocket_connect("9002"); // used for sending data programatic
-  thePage.google_charts_loaded();
+  thePage.init();
 }
 
 /*

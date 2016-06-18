@@ -5,7 +5,8 @@ class Page {
     this.evaluator = new Evaluator(this.formula_area);
   }
 
-  google_charts_loaded() {
+  // to be called only once google chart modules are loaded
+  init() {
     this.plot = new Plot();
     var qs = this.getUrlVars();
     if ("plot" in qs) this.b64_to_state(qs.plot);

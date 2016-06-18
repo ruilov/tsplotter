@@ -1,9 +1,7 @@
 class Plot {
   static get default_options() {
     return {
-      legend: {
-        position: 'bottom'
-      },
+      legend: {position: 'bottom'},
       interpolateNulls: true,
       series: {},
       explorer: {
@@ -11,9 +9,7 @@ class Plot {
         axis: 'horizontal',
         keepInBounds: true,
       },
-      vAxis: {
-        viewWindowMode: 'maximized'
-      },
+      vAxis: {viewWindowMode: 'maximized'},
       chartArea: {
         width: '90%',
         height: '80%'
@@ -81,18 +77,13 @@ class Plot {
 
   // HACK ALERT (I think...javacsript+html is so bad, this may be the gold standard)
   plot(formulas) {
-    HTML.chart_elem().style.marginTop = "-30px";
-
     var chart_type = this.googlePlot.getChartType();
-    if (chart_type == "ScatterChart")
-      this.plot_as_scatter(formulas);
-    else if (chart_type == "Histogram")
-      this.plot_as_histogram(formulas);
-    else if (chart_type == "Table") {
-      HTML.chart_elem().style.marginTop = "5px";
-      this.plot_as_table(formulas);
-    } else
-      this.plot_as_line(formulas);
+    HTML.position_chart(chart_type);
+    
+    if (chart_type == "ScatterChart") this.plot_as_scatter(formulas);
+    else if (chart_type == "Histogram") this.plot_as_histogram(formulas);
+    else if (chart_type == "Table") this.plot_as_table(formulas);
+    else this.plot_as_line(formulas);
   }
 
   // f9 callback when the chart_choice is series
@@ -206,8 +197,6 @@ class Plot {
   }
 
   draw(table, chartOptions) {
-    $(HTML.chart_elem()).show();
-
     var dataTable = google.visualization.arrayToDataTable(table);
     this.googlePlot.setDataTable(dataTable);
 

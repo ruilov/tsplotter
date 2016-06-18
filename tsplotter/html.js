@@ -22,8 +22,9 @@ class HTML {
     return document.getElementById("thePlot");
   }
 
-  static error_message_elem() {
-    return document.getElementById("error_message");
+  static position_chart(chartType) {
+    if(chartType=="table") HTML.chart_elem().style.marginTop = "-30px";
+    else HTML.chart_elem().style.marginTop = "5px";
   }
 
   static perma_link_elem() {
@@ -38,10 +39,14 @@ class HTML {
     return document.getElementById("end-date");
   }
 
+  static _error_message_elem() {
+    return document.getElementById("error_message");
+  }
+
   static show_error(message) {
     var chart = HTML.chart_elem();
     chart.style.visibility = "hidden";
-    var errMsg = HTML.error_message_elem();
+    var errMsg = HTML._error_message_elem();
     errMsg.style.visibility = "visible";
     errMsg.innerHTML = message;
   }
@@ -49,7 +54,7 @@ class HTML {
   static show_chart() {
     var chart = HTML.chart_elem();
     chart.style.visibility = "visible";
-    var errMsg = HTML.error_message_elem();
+    var errMsg = HTML._error_message_elem();
     errMsg.style.visibility = "hidden";
   }
 
