@@ -204,7 +204,9 @@ class Evaluator {
 
     formulas = formulas.filter(x => x.evaled); // filter out empty spaces
     // keep only the desired range
-    for(var formula of formulas) formula.evaled = formula.evaled.range(this.start, this.end);
+    for(var formula of formulas) 
+      if(typeof formula.evaled.range === "function") // this allows the user to create string variables
+        formula.evaled = formula.evaled.range(this.start, this.end);
     // callback to plot
     this.plot_cb(_.filter(formulas,x => !x.hidden));
   }
