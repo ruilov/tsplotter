@@ -1,5 +1,10 @@
 class HTML {
 
+  static init() {
+    HTML.make_layout();
+    HTML.make_file_load_button();
+  }
+
   // creates the layout of the page with the various frames
   static make_layout() {
     $('body').layout({

@@ -47,17 +47,9 @@ function init() {
   thePage.init();
 }
 
-/*
- * EXECUTION STARTS HERE
- */
+// EXECUTION STARTS HERE
 $(document).ready(function() {
   thePage = new Page();
-
-  HTML.make_layout();
-  HTML.make_file_load_button();
-
-  google.charts.load('current', {
-    'packages': ['charteditor'],
-    'callback': init
-  });
+  HTML.init();
+  google.charts.load('current', {'packages': ['charteditor'], 'callback': init});
 });
