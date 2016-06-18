@@ -2,35 +2,16 @@ class FormulaArea {
 
   // ===== CONSTRUCTION ======
   constructor() {
-    var tt = this;
     $("#formula_area").cleditor({
       controls: 'color',
       width: '99%',
       bodyStyle: "font: 18px Lucida Grande",
-      color_cb: function(color) {
-        tt.color_cb(color);
-      },
+      color_cb: color => this.color_cb(color),
     });
-    this.add_shortcuts();
   }
 
-  add_shortcuts() {
-    var tt = this;
-    var key_shortcuts = {
-      "F9": function() {Page.f9_cb();},
-      "TAB": function() {tt.ctrl_t_cb();},
-      "CTRL+B": function() {tt.ctrl_b_cb();},
-      "CTRL+H": function() {tt.ctrl_h_cb();},
-      "CTRL+T": function() {tt.ctrl_t_cb();},
-      "CTRL+E": function() {tt.ctrl_e_cb();},
-      "CTRL+ALT+C": function() {tt.ctrl_alt_c_cb();},
-    };
-    for (var sc in key_shortcuts) {
-      shortcut.add(sc, key_shortcuts[sc]);
-      shortcut.add(sc, key_shortcuts[sc], {
-        'target': this.formula_editor.doc
-      });
-    }
+  add_shortcut(key,cb) {
+    shortcut.add(key, cb, {'target': this.formula_editor.doc});
   }
 
   // ===== GETTERS ======

@@ -3,6 +3,21 @@ class Page {
   constructor() {
     this.formula_area = new FormulaArea();
     this.evaluator = new Evaluator(this.formula_area);
+
+    var key_shortcuts = {
+      "F9": () => this.f9_cb(),
+      "TAB": () => this.formula_area.ctrl_t_cb(),
+      "CTRL+B": () => this.formula_area.ctrl_b_cb(),
+      "CTRL+H": () => this.formula_area.ctrl_h_cb(),
+      "CTRL+T": () => this.formula_area.ctrl_t_cb(),
+      "CTRL+E": () => this.formula_area.ctrl_e_cb(),
+      "CTRL+ALT+C": () => this.formula_area.ctrl_alt_c_cb(),
+    };
+
+    for (var sc in key_shortcuts) {
+      shortcut.add(sc, key_shortcuts[sc]);
+      this.formula_area.add_shortcut(sc,key_shortcuts[sc]);
+    }
   }
 
   // to be called only once google chart modules are loaded
