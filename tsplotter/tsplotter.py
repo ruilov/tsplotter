@@ -60,8 +60,8 @@ class Plotter:
   def new_client(self,client,server):
     msgs = [self.msg_plots(self.plots.keys())]
 
-    if self.start==None and self.series_type=="floats": self.set_start(0)
-    if self.end==None and self.series_type=="floats": self.set_end(max([len(x) for x in self.plots.values()]))
+    if self.start==None and self.series_type=="floats": self.start = 0
+    if self.end==None and self.series_type=="floats": self.end = max([len(x) for x in self.plots.values()])
 
     if self.start is not None: msgs.append(self.msg_start())
     if self.end is not None: msgs.append(self.msg_end())
