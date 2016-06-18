@@ -86,11 +86,9 @@ class Evaluator {
   }
 
   symbol_nodes(parsed_formula) {
-    return parsed_formula.filter(function(x) {
-      return x.isSymbolNode && (parsed_formula.type != "AssignmentNode" || x.name != parsed_formula.name);
-    }).map(function(x) {
-      return x.name.replace("_dict", "");
-    });
+    return parsed_formula.filter(x => 
+      x.isSymbolNode && (parsed_formula.type != "AssignmentNode" || x.name != parsed_formula.name)
+    ).map(x => x.name.replace("_dict", ""));
   }
 
   get start_text() {
@@ -110,12 +108,7 @@ class Evaluator {
   }
 
   get error_message() {
-    var msg = "";
-    for (var mi = 0; mi < this.error_messages.length; mi++) {
-      msg += this.error_messages[mi];
-      if (mi < this.error_messages.length - 1) msg += "\n";
-    }
-    return msg;
+    return this.error_messages.join("\n");
   }
 
   // ===== SETTERS ======
@@ -177,17 +170,18 @@ class Evaluator {
 
     for (var fi = 0; fi < formulas.length; fi++) {
       if (formulas[fi].off) continue;
-      var formula = formulas[fi].text.trim();
-      formula = formula.replace(String.fromCharCode(160), "");
-      if (formula.length === 0) continue;
+
+      var formulaText = formulas[fi].text.trim();
+      formulaText = formulaText.replace(String.fromCharCode(160), "");
+      if (formulaText.length === 0) continue;
 
       // eval it
       var evaled;
       try {
         // populate the scope with cached data from quandl before evaluing
-        this.populate_scope(formula);
-        evaled = math.eval(formula, this.scope);
-        if (evaled === null) throw formula + ": error evaluating series";
+        this.populate_scope(formulaText);
+        evaled = math.eval(formulaText, this.scope);
+        if (evaled === null) throw formulaText + ": error evaluating series";
         if (typeof(evaled) == "number") evaled = make_constant_series(evaled, this.start, this.end);
       } catch (err) {
         console.log(err);
@@ -196,29 +190,23 @@ class Evaluator {
         this.error_fn();
         return;
       }
-      if (formulas[fi].hidden) continue;
 
       formulas[fi].evaled = evaled;
-
-      var title = formulas[fi].title;
-      if (!title) title = this.make_title(formula);
-      formulas[fi].display_title = title;
-
       if (formulas[fi].color) formulas[fi].color = rgb2hex(formulas[fi].color);
+      
+      var title = formulas[fi].title;
+      if (!title) title = this.make_title(formulaText);
+      formulas[fi].display_title = title;
     }
 
     this.populate_missing_colors(formulas);
     this.formula_area.parsed_formulas = formulas;
 
-    // filter out empty spaces?!
-    formulas = formulas.filter(function(x) {
-      return x.evaled;
-    });
-
-    for(var formula of formulas)
-      formula.evaled = formula.evaled.range(this.start, this.end);
-
-    this.plot_cb(formulas);
+    formulas = formulas.filter(x => x.evaled); // filter out empty spaces
+    // keep only the desired range
+    for(var formula of formulas) formula.evaled = formula.evaled.range(this.start, this.end);
+    // callback to plot
+    this.plot_cb(_.filter(formulas,x => !x.hidden));
   }
 
   populate_missing_colors(formulas) {
@@ -230,9 +218,6 @@ class Evaluator {
     for (idx = 0; idx < formulas.length; idx++) {
       if (formulas[idx].off || formulas[idx].hidden) continue;
       if (formulas[idx].color) continue;
-      var formula = formulas[idx].text.trim();
-      formula = formula.replace(String.fromCharCode(160), "");
-      if (formula.length === 0) continue;
 
       // first try to find one that hasn't been used
       var found = false;
@@ -351,7 +336,7 @@ class Evaluator {
     return function(retVal) {
       var dataset = retVal.dataset;
 
-      var col_names = dataset.column_names.map(function(x) {return x.toLowerCase();});
+      var col_names = dataset.column_names.map(x => x.toLowerCase());
       var dateIdx = col_names.indexOf("date");
       if (dateIdx < 0) {
         console.log(dataset.column_names);
@@ -370,8 +355,8 @@ class Evaluator {
       } else {
         tt.cached_datasets[symbol] = dataset;
         tt.cached_datasets[symbol].data2 = {};
-        for (var colName of dataset.column_names)
-          tt.cached_datasets[symbol].data2[colName] = new Series();
+        for (var cn of dataset.column_names)
+          tt.cached_datasets[symbol].data2[cn] = new Series();
       }
 
       // add the data

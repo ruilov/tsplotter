@@ -17,9 +17,7 @@ class FormulaArea {
   // ===== GETTERS ======
 
   get state() {
-    return {
-      "parsed_formulas": this.parsed_formulas
-    };
+    return {"parsed_formulas": this.parsed_formulas};
   }
 
   get formula_editor() {
