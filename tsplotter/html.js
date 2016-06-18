@@ -3,7 +3,7 @@ class HTML {
   static init() {
     HTML.make_layout();
     HTML.make_file_load_button();
-    HTML.bind_paste_event(parse_excel_data);
+    HTML.bind_paste_event(IO.parse_excel_data);
   }
 
   // creates the layout of the page with the various frames
@@ -21,7 +21,7 @@ class HTML {
       $('#file_load').click();
       return false;
     });
-    document.getElementById('file_load').addEventListener('change', file_load_button_cb, false);
+    document.getElementById('file_load').addEventListener('change', IO.file_load_button_cb, false);
   }
 
   static bind_paste_event(cb) {
