@@ -158,9 +158,11 @@ class FormulaArea {
     for (var i = 0; i < parsed.length; i++)
       if (parsed[i].cursor) cursor_lines.push(i);
 
-    var start_line = _.min(cursor_lines);
-    var end_line = _.max(cursor_lines);
-    this.setCursorOffset(start_line, start_offset, end_line, end_offset);
+    if(cursor_lines.length>0) {
+      var start_line = _.min(cursor_lines);
+      var end_line = _.max(cursor_lines);
+      this.setCursorOffset(start_line, start_offset, end_line, end_offset);
+    }
   }
 
   make_html(parsed) {
