@@ -42,6 +42,12 @@ class Plot {
     Page.f9_cb();
   }
 
+  add_default_options() {
+    var options = this.googlePlot.getOptions();
+    for(var opt in Plot.default_options) options[opt] = Plot.default_options[opt];
+    this.googlePlot.setOptions(options);
+  }
+
   set_options(options) {
     if(this.googlePlot.getChartType()!="Table") {
       delete options.width; // note that the editor also messes up with width and height, so we usually should delete them

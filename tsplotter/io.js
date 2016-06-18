@@ -25,11 +25,11 @@ function file_save_button_cb() {
     websocket.close();
   };
 
+  // if we can't save through a socket, download it
   var onerror = function(e) {
     saveTextAs(make_json(), "plot.ts");
   };
 
-  // fixme: online the socket is null, and we can't even set onerror!
   var socket = websocket_connect("9001");
   if(socket===null) {
     onerror();
@@ -57,8 +57,9 @@ function websocket_message(message, e, do_f9) {
     }
   } else state[message.type] = message.data;
 
-  thePage.state = state;  
-  if (do_f9) Page.f9_cb();
+  thePage.state = state;
+  thePage.plot.add_default_options();
+  if (do_f9) thePage.f9_cb();
 }
 
 function websocket_onmessage(e) {
@@ -67,7 +68,7 @@ function websocket_onmessage(e) {
   if (message.type == "multiple") {
     for (var msg of message.data)
       websocket_message(msg, e, false);
-    Page.f9_cb();
+    thePage.f9_cb();
   } else websocket_message(message, e);
 }
 
