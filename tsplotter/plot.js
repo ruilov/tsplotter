@@ -3,42 +3,22 @@ class Plot {
     return {
       legend: {position: 'bottom'},
       interpolateNulls: true,
-      series: {},
       explorer: {
         actions: ['dragToZoom', 'rightClickToReset'],
         axis: 'horizontal',
         keepInBounds: true,
       },
       vAxis: {viewWindowMode: 'maximized'},
-      chartArea: {
-        width: '90%',
-        height: '80%'
-      }
+      chartArea: {width: '90%', height: '80%'}
     };
   }
 
   constructor() {
-    this.googlePlot = new google.visualization.ChartWrapper({
-      containerId: "thePlot"
-    });
+    this.googlePlot = new google.visualization.ChartWrapper({containerId: "thePlot"});
     this.googlePlot.setChartType("LineChart");
     this.googlePlot.setOptions(Object.assign({}, Plot.default_options)); // google charts do bad things to objects. Pass a copy.
     this.chartEditor = new google.visualization.ChartEditor();
-
-    var tt = this;
-    google.visualization.events.addListener(this.chartEditor, 'ok', function() {
-      tt.chart_editor_cb();
-    });
-  }
-
-  // called when the user presses ok in the chart editor
-  chart_editor_cb() {
-    var editorPlot = this.chartEditor.getChartWrapper();
-    var chart_type = editorPlot.getChartType();
-    this.googlePlot.setChartType(chart_type);
-    var options = editorPlot.getOptions();
-    this.set_options(options);
-    Page.f9_cb();
+    google.visualization.events.addListener(this.chartEditor, 'ok', () => this.chart_editor_cb());
   }
 
   get state() {
@@ -54,11 +34,19 @@ class Plot {
     if ("chart_options" in state) this.set_options(state.chart_options);
   }
 
+  // called when the user presses ok in the chart editor
+  chart_editor_cb() {
+    var editorPlot = this.chartEditor.getChartWrapper();
+    this.googlePlot.setChartType(editorPlot.getChartType());
+    this.set_options(editorPlot.getOptions());
+    Page.f9_cb();
+  }
+
   set_options(options) {
-    delete options.width;
-    delete options.height;
-    for (var key in Plot.default_options)
-      options[key] = Plot.default_options[key];
+    if(this.googlePlot.getChartType()!="Table") {
+      delete options.width; // note that the editor also messes up with width and height, so we usually should delete them
+      delete options.height;
+    }
     this.googlePlot.setOptions(options);
   }
 
@@ -75,7 +63,6 @@ class Plot {
     elem.offset(off);
   }
 
-  // HACK ALERT (I think...javacsript+html is so bad, this may be the gold standard)
   plot(formulas) {
     var chart_type = this.googlePlot.getChartType();
     HTML.position_chart(chart_type);
@@ -113,6 +100,8 @@ class Plot {
     var [table, chartOptions] = this.data_and_options(formulas, false);
     if (!("hAxis" in chartOptions)) chartOptions.hAxis = {};
     chartOptions.hAxis.title = formulas[0].display_title;
+    for(var col in chartOptions.series) chartOptions.series[col].pointSize = 2;
+
     this.draw(table, chartOptions);
   }
 
@@ -123,81 +112,13 @@ class Plot {
     var data = table.slice(1);
     data.sort(function(a, b) {return b[0] - a[0];});
     data.splice(0, 0, table[0]);
-
     chartOptions.width = "100%";
     chartOptions.height = "100%";
     this.draw(data, chartOptions);
   }
 
-  // if includeDates=True, the first column will be the dates, otherwise the data table won't have the dates at all
-  data_and_options(formulas, includeDates) {
-    var chartOptions = this.googlePlot.getOptions();
-    // sigh...even when the user cancels in charteditor, the options are already modified
-    // so we have to delete width and height no matter what!
-    delete chartOptions.width;
-    delete chartOptions.height;
-
-    chartOptions.series = {};
-
-    // construct the headers. Note that this will modify chartOptions
-    var headers = ["Date"];
-
-    var fi_adder = 0;
-    if (!includeDates) fi_adder = 1; // in this case series 0 is really the 2nd formula. The 1st formula is the x-axis.
-    var formulas_filtered = [];
-    for (var fi = 0; fi < formulas.length; fi++) {
-      var formula = formulas[fi];
-      if (formula.evaled.isEmpty()) {
-        fi_adder += 1;
-        continue;
-      }
-
-      chartOptions.series[fi - fi_adder] = {
-        color: formula.color
-      };
-      if (!includeDates) chartOptions.series[fi - fi_adder].pointSize = 2; // fixme: this doesn't belong here!
-      if (formula.rhs) {
-        formula.display_title = "(rhs) " + formula.display_title;
-        chartOptions.series[fi - fi_adder].targetAxisIndex = 1;
-      }
-      headers.push(formula.display_title);
-      formulas_filtered.push(formula);
-    }
-
-    formulas = formulas_filtered;
-    var table = [headers];
-
-    // gather all dates
-    if (formulas.length > 0) {
-      var all_xs = formulas.map(function(x) {
-        return Object.keys(x.evaled.map);
-      });
-      all_xs = _.uniq(_.flatten(all_xs));
-      all_xs = all_xs.map(formulas[0].evaled.parse_func());
-      all_xs.sort(function(a, b) {
-        return a - b;
-      });
-
-      // make the table
-      var toStr_func = formulas[0].evaled.toStr_func();
-      for (var x of all_xs) {
-        var elem = formulas.map(function(f) {
-          return f.evaled.getX(toStr_func(x));
-        });
-        elem.splice(0, 0, x);
-        table.push(elem);
-      }
-    }
-
-    // remove the dates if needed
-    if (!includeDates) table = table.map(function(x) {
-      return x.slice(1);
-    });
-    return [table, chartOptions];
-  }
-
-  draw(table, chartOptions) {
-    var dataTable = google.visualization.arrayToDataTable(table);
+  draw(data, chartOptions) {
+    var dataTable = google.visualization.arrayToDataTable(data);
     this.googlePlot.setDataTable(dataTable);
 
     if ("hAxis" in chartOptions) {
@@ -208,7 +129,46 @@ class Plot {
       if ("maxValue" in hAxis) hAxis.viewWindow.max = hAxis.maxValue;
     }
 
-    this.googlePlot.setOptions(chartOptions);
+    this.set_options(chartOptions);
     this.googlePlot.draw();
+  }
+
+  // if includeDates=True, the first column will be the dates, otherwise the data table won't have the dates at all
+  data_and_options(formulas, includeDates) {
+    var chartOptions = this.googlePlot.getOptions();
+
+    chartOptions.series = {};
+    formulas = _.filter(formulas, x => !x.evaled.isEmpty());
+    for (var fi = 0; fi < formulas.length; fi++) {
+      chartOptions.series[fi] = {color: formulas[fi].color};
+      if (formulas[fi].rhs) {
+        formulas[fi].display_title = "(rhs) " + formulas[fi].display_title;
+        chartOptions.series[fi].targetAxisIndex = 1;
+      }
+    }
+
+    var headers = ["Date"].concat(formulas.map(x => x.display_title));
+    var table = [headers];
+
+    if (formulas.length > 0) {
+      // gather all x values
+      var all_xs = formulas.map(x => Object.keys(x.evaled.map));
+      all_xs = _.uniq(_.flatten(all_xs));
+      all_xs = all_xs.map(formulas[0].evaled.parse_func());
+      all_xs.sort((a,b) => a-b);
+
+      // make the table
+      var toStr_func = formulas[0].evaled.toStr_func();
+      var getter = f => f.evaled.getX(toStr_func(x));
+      for (var x of all_xs) table.push([x].concat(formulas.map(getter)));
+    }
+
+    // remove the dates if needed
+    if (!includeDates) {
+      table = table.map(x => x.slice(1));
+      for(fi = 0; fi < formulas.length-1; fi++) 
+        chartOptions.series[fi]  = chartOptions.series[fi+1];
+    }
+    return [table, chartOptions];
   }
 }
