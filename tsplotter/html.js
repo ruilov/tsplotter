@@ -3,6 +3,7 @@ class HTML {
   static init() {
     HTML.make_layout();
     HTML.make_file_load_button();
+    HTML.bind_paste_event(parse_excel_data);
   }
 
   // creates the layout of the page with the various frames
@@ -21,6 +22,16 @@ class HTML {
       return false;
     });
     document.getElementById('file_load').addEventListener('change', file_load_button_cb, false);
+  }
+
+  static bind_paste_event(cb) {
+    $("html").bind("paste", function(e) {
+      e.preventDefault();
+      if(e.originalEvent.clipboardData){
+        var text = e.originalEvent.clipboardData.getData("text/plain");
+        cb(text);
+      }
+    });
   }
 
   static chart_elem() {

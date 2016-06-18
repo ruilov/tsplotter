@@ -39,6 +39,44 @@ function file_save_button_cb() {
   }
 }
 
+function parse_excel_data(text) {
+  var data = [];
+
+  var lines = text.split(String.fromCharCode(13));
+  for(var line of lines) data.push(line.split(String.fromCharCode(9)));
+  
+  // var headers = data[0];
+  // var additional_scope = {};
+  // for(var i=1; i < data[0].length; i++) additional_scope[data[0][]]
+  
+  var series = [];
+  for(var c = 1; c < data[0].length; c++) series[c] = {};
+
+  for(var row = 1; row < data.length; row++) {
+    var parsed = Date.parse(data[row][0]);
+    if(isNaN(parsed)) continue;
+    var dt = dateToStr(new Date(parsed));
+    for(c = 1; c < data[row].length; c++) {
+      parsed = parseInt(data[row][c]);
+      if(isNaN(parsed)) continue;
+      series[c][dt] = parsed;
+    }
+  }
+
+  var additional_scope = {};
+  var parsed_formulas = thePage.formula_area.parsed_formulas;
+  console.log(parsed_formulas);
+  for(c = 1; c < data[0].length; c++) {
+    additional_scope[data[0][c]] = {"map": series[c]};
+    parsed_formulas.push({"text": data[0][c]});
+  }
+  thePage.state = {
+    "additional_scope": additional_scope,
+    "parsed_formulas": parsed_formulas
+  };
+  thePage.f9_cb();
+}
+
 function websocket_message(message, e, do_f9) {
   if (typeof(do_f9) == "undefined") do_f9 = true;
 
