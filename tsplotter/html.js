@@ -39,7 +39,7 @@ class HTML {
   }
 
   static position_chart(chartType) {
-    if(chartType!="table") HTML.chart_elem().style.marginTop = "-30px";
+    if(chartType!="Table") HTML.chart_elem().style.marginTop = "-30px";
     else HTML.chart_elem().style.marginTop = "5px";
   }
 
