@@ -44,16 +44,15 @@ class IO {
   static parse_excel_data(text) {
     var data = [];
 
+    // parse the text into a table
     var lines = text.split(String.fromCharCode(13));
     for(var line of lines) data.push(line.split(String.fromCharCode(9)));
     
-    // var headers = data[0];
-    // var additional_scope = {};
-    // for(var i=1; i < data[0].length; i++) additional_scope[data[0][]]
-    
+    // make a place for us to put the data into
     var series = [];
     for(var c = 1; c < data[0].length; c++) series[c] = {};
 
+    // actual parsing the data
     for(var row = 1; row < data.length; row++) {
       var parsed = Date.parse(data[row][0]);
       if(isNaN(parsed)) continue;
@@ -65,17 +64,13 @@ class IO {
       }
     }
 
-    var additional_scope = {};
-    var parsed_formulas = thePage.formula_area.parsed_formulas;
-    console.log(parsed_formulas);
+    // construct the scope and formulas
+    var state = thePage.state;
     for(c = 1; c < data[0].length; c++) {
-      additional_scope[data[0][c]] = {"map": series[c]};
-      parsed_formulas.push({"text": data[0][c]});
+      state.additional_scope[data[0][c]] = {"map": series[c]};
+      state.parsed_formulas.push({"text": data[0][c]});
     }
-    thePage.state = {
-      "additional_scope": additional_scope,
-      "parsed_formulas": parsed_formulas
-    };
+    thePage.state = state;
     thePage.f9_cb();
   }
 
