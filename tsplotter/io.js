@@ -58,7 +58,7 @@ class IO {
       if(isNaN(parsed)) continue;
       var dt = dateToStr(new Date(parsed));
       for(c = 1; c < data[row].length; c++) {
-        parsed = parseInt(data[row][c]);
+        parsed = parseFloat(data[row][c]);
         if(isNaN(parsed)) continue;
         series[c][dt] = parsed;
       }
