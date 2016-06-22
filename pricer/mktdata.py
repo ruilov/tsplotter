@@ -3,10 +3,6 @@ from lib.myseries import MySeries
 import markets
 
 class MktData:
-  # fututres: type -> market -> dt -> val
-  # rates: type -> market -> dt -> val
-  # option prices: type -> market -> option_type -> dt -> strike -> val
-
   def __init__(self,pricing_date):
     self.coords = MyDict()
     self.pricing_date = pricing_date
@@ -54,35 +50,4 @@ def new_series():
 
 def get_or_series(v):
   return (v, new_series)
-
-  # futures
-  #   type = futures
-  #   family = commod, rates
-  #   market = wti, brt, ng, libor, fedfunds
-  #   point = [month]
-  #   value = price
-  #   metadata = description, contract code
-
-  # option prices
-  #   type = option price
-  #   family = commod, rates
-  #   market = wti, brt, ng, libor, fedfunds
-  #   point = [month,option type,strike]
-  #   value = price
-  #   metadata = description, contract code
-
-  # vols
-  #   type = vols
-  #   family = commod
-  #   market = wti, brt, ng
-  #   point = [month,delta]
-  #   value = vol
-  #   metadata = description, contract code
-
-  # rates
-  #   type = rates
-  #   family = rates
-  #   market = libor, fedfunds
-  #   point = [date]
-  #   value = rate
-  #   metadata = description, contract code
+  

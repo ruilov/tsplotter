@@ -2,20 +2,12 @@ import lib.dateutils,quant,numpy as np,math
 from heapq import nsmallest
 from markets import *
 
-def calibrate_vols(mktdata):
-  calibrate_vol_market(mktdata,WTI)
-  calibrate_vol_market(mktdata,NG)
-  calibrate_vol_market(mktdata,RB)  
+def calibrate_vols():
+  calibrate_term_vols(WTI)
+  calibrate_term_vols(NG)
+  calibrate_term_vols(RB)
 
-  # mkt = RB
-  # for month in dateutils.month_generator(mkt.first_option(),"DEC21"):
-  #   print dateutils.parse_month(month),"|",
-  #   for QD in range(1,20):
-  #     QD = float(QD) / 20
-  #     print mkt.vol(month,QD),"|",
-  #   print ""
-
-def calibrate_vol_market(mktdata,mkt):
+def calibrate_term_vols(mkt):
   ff = FF.rates()
   calls = mkt.option_prices("call")
   puts = mkt.option_prices("put")
@@ -27,7 +19,7 @@ def calibrate_vol_market(mktdata,mkt):
 
   for month,S in futures.itermonths():
     opt_exp = mkt.option_expiration(month)
-    T = dateutils.dt(mktdata.pricing_date,opt_exp)
+    T = dateutils.dt(mkt.mktdata.pricing_date,opt_exp)
     r = ff.interp(opt_exp)
     df = math.exp(-r*T)
 
@@ -60,7 +52,7 @@ def calibrate_vol_market(mktdata,mkt):
     if min(QDs) > .3 or max(QDs) < .7: continue
 
     vol_poly = np.poly1d(np.polyfit([x[1] for x in vols_by_QD],[x[2] for x in vols_by_QD],smile_poly_degree)) # fit a polynomial
-    mktdata.addCoord(VolsCoord(mkt,month),vol_poly)
+    mkt.mktdata.addCoord(VolsCoord(mkt,month),vol_poly)
 
     # for (K,QD,vol) in vols_by_QD:
     #   print dateutils.parse_month(month),"|",T,"|",S,"|",K,"|",vol,"|",QD,"|",idx

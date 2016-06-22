@@ -40,7 +40,7 @@ def cme_config():
 
 def calibrate(mktdata):
   calibrate_rates(mktdata)
-  calibrate_vols(mktdata)
+  calibrate_vols()
 
 def load_calibrated_data(date):
   filename = filename_calibrated(date)
