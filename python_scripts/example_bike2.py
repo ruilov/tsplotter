@@ -7,7 +7,7 @@ plotter = Plotter()
 plotter.set_chart_type("ScatterChart")
 # [ts,alts] = tcx("cycling/nyack jun8.tcx")
 # [ts,alts] = tcx("cycling/piemont40 10jun16.tcx")
-[ts,alts] = tcx("cycling/hills 14jun16.tcx")
+[ts,alts] = tcx("../cycling/hills 14jun16.tcx")
 
 dists = np.linspace(0,ts.index[-1],1500)
 ts = ts.interp(dists)

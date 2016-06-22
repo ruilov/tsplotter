@@ -1,8 +1,9 @@
-import cme
-from markets import *
-from option import Option
+import pricer.cme,os
+import lib.dateutils as dateutils
+from pricer.markets import *
+from pricer.option import Option
 
-cme.init()
+pricer.cme.init()
 
 for dt,val in RB.futures().iteritems():
   print dt,"|",val

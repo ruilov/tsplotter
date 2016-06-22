@@ -6,7 +6,7 @@ from lib.myseries import MySeries
 plotter = Plotter()
 plotter.set_start(0)
 
-routes = ["cycling/nyack jun8.tcx","cycling/piemont40 10jun16.tcx"]
+routes = ["../cycling/nyack jun8.tcx","../cycling/piemont40 10jun16.tcx"]
 
 total_dist = 0
 series = {}

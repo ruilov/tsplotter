@@ -59,14 +59,21 @@ def save_calibrated_data(data):
   pickle.dump(data,file)
   file.close()
 
+def mktdata_dir():
+  path = os.getcwd()
+  while path != "/":
+    if os.path.isdir(path + "/mktdata"): return path + "/mktdata/"
+    path = os.path.dirname(path)
+  return None
+
 def filename_calibrated(date):
-  return "mktdata/cme-calibrated-" + str(date) + ".bin"
+  return mktdata_dir() + "cme-calibrated-" + str(date) + ".bin"
 
 def can_retrieve_now():
   return not dateutils.isNotBizDate(datetime.date.today(),"cme") and datetime.datetime.now().hour >= 16
 
 def filename_raw_data(page,date):
-  return "mktdata/cme-" + page + "-" + str(date) + ".mkt"
+  return mktdata_dir() + "cme-" + page + "-" + str(date) + ".mkt"
 
 def is_raw_data_saved(date):
   config = cme_config()

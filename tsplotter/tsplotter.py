@@ -22,7 +22,7 @@ class Plotter:
     self.plots = {}
     self.series_type = None
 
-    self.url = 'file://' + os.getcwd() + '/index.html'
+    self.url = 'file://' + os.getcwd() + '/../index.html'
     system = platform.system().lower()
     if system == "linux" or system == "linux2":
       self.chrome_path = '/usr/bin/google-chrome %s'
