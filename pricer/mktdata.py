@@ -11,7 +11,7 @@ class MktData:
     tipe = coord.type
     dt = coord.reference_date()
 
-    if tipe == "futures" or tipe == "rates" or tipe == "vols":
+    if tipe == "futures" or tipe == "rates" or tipe == "vols" or tipe == "long vol" or tipe == "long short corr" or tipe == "beta" or tipe == "local vol":
       self.coords[tipe][get_or_series(coord.market)][dt] = value
 
     if tipe == "option price":

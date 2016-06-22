@@ -42,6 +42,15 @@ class Market:
   def vols(self):
     return self.mktdata.coords["vols"][self]
 
+  def long_vol(self):
+    return self.mktdata.coords["long vol"][self][0]
+
+  def long_short_corr(self):
+    return self.mktdata.coords["long short corr"][self][0]
+
+  def beta(self):
+    return self.mktdata.coords["beta"][self][0]
+
   def rates(self):
     return self.mktdata.coords["rates"][self]
 
@@ -101,6 +110,39 @@ class VolsCoord(Coord):
   def reference_date(self): return dateutils.parse_month(self.month)
 
   def __str__(self): return self.type + " coord: " + str(self.market) + "-" + self.month
+
+class LocalVolCoord(Coord):
+  def __init__(self,market,month):
+    Coord.__init__(self,market,"local vol")
+    self.month = month
+
+  def reference_date(self): return dateutils.parse_month(self.month)
+
+  def __str__(self): return self.type + " coord: " + str(self.market) + "-" + self.month
+
+class LongVolCoord(Coord):
+  def __init__(self,market):
+    Coord.__init__(self,market,"long vol")
+
+  def reference_date(self): return datetime.date(2000,1,1)
+
+  def __str__(self): return self.type + " coord: " + str(self.market)
+
+class LongShortCorrCoord(Coord):
+  def __init__(self,market):
+    Coord.__init__(self,market,"long short corr")
+
+  def reference_date(self): return datetime.date(2000,1,1)
+
+  def __str__(self): return self.type + " coord: " + str(self.market)
+
+class BetaCoord(Coord):
+  def __init__(self,market):
+    Coord.__init__(self,market,"beta")
+
+  def reference_date(self): return datetime.date(2000,1,1)
+
+  def __str__(self): return self.type + " coord: " + str(self.market)
 
 class RatesCoord(Coord):
   def __init__(self,market,date):

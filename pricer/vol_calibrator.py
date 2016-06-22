@@ -1,11 +1,66 @@
-import lib.dateutils,quant,numpy as np,math
+import quant,numpy as np,math,lib.dateutils as du,gabillon
 from heapq import nsmallest
 from markets import *
+from lib.myseries import MySeries
+from tsplotter.tsplotter import Plotter
+
+# this calibration is good enough to calibrate WTI
+# however for NG because apr vol << mar vol, it fails due to negative fwd var
+# for NG we'll need a future calibration
 
 def calibrate_vols():
   calibrate_term_vols(WTI)
   calibrate_term_vols(NG)
   calibrate_term_vols(RB)
+
+def calibrate_long_vol(mkt):
+  last_vol = mkt.vols()[-1](0.5) * .8 # if the long vol is too high, we fail to calibrate
+  mkt.mktdata.addCoord(LongVolCoord(mkt),last_vol)
+
+def calibrate_long_short_corr(mkt):
+  mkt.mktdata.addCoord(LongShortCorrCoord(mkt),0.95)
+
+def calibrate_beta(mkt):
+  mkt.mktdata.addCoord(BetaCoord(mkt),0.3)
+
+def calibrate_local_vols(mkt):
+  first_month = du.date_to_month(mkt.vols().index[0])
+  last_month = du.date_to_month(mkt.vols().index[-1])
+
+  local_vols = MySeries()
+  term_vols = MySeries() # for debugging
+
+  prev_var = 0.0
+  prev_T = 0.0
+  for month in du.month_generator(first_month,last_month):
+    opt_exp = mkt.option_expiration(month)
+    term_vol = mkt.vol(month,0.5)
+    T = du.dt(mkt.mktdata.pricing_date,opt_exp)
+
+    total_local_vol = gabillon.local_vol_from_term_vol(term_vol,T,mkt.long_vol(),mkt.beta(),mkt.long_short_corr())
+    total_local_var = total_local_vol * total_local_vol * T
+
+    inc_var = total_local_var - prev_var
+    # print month,"|",T,"|",total_local_vol,"||",term_vol
+    if inc_var < -1e-3: raise Exception("negative local var for " + month + ": " + str(inc_var))
+    inc_T = T - prev_T
+
+    local_vol = math.sqrt(inc_var/inc_T)
+    local_vols[opt_exp] = local_vol
+    term_vols[opt_exp] = term_vol
+
+    # sanity check it
+    # term_vol_check = gabillon.term_vol(local_vols,opt_exp,mkt.mktdata.pricing_date,mkt.long_vol(),mkt.beta(),mkt.long_short_corr())
+    # assert abs(term_vol_check-term_vol)<1e-14
+    # print month,"|",T,"|",total_local_vol,"|",local_vol,"|",term_vol_check
+
+    prev_var = total_local_var
+    prev_T = T
+    
+  plotter = Plotter()
+  plotter.plot("local_" + str(mkt),local_vols)
+  plotter.plot("term_" + str(mkt),term_vols)
+  plotter.show()
 
 def calibrate_term_vols(mkt):
   ff = FF.rates()
@@ -19,7 +74,7 @@ def calibrate_term_vols(mkt):
 
   for month,S in futures.itermonths():
     opt_exp = mkt.option_expiration(month)
-    T = dateutils.dt(mkt.mktdata.pricing_date,opt_exp)
+    T = du.dt(mkt.mktdata.pricing_date,opt_exp)
     r = ff.interp(opt_exp)
     df = math.exp(-r*T)
 
@@ -55,11 +110,11 @@ def calibrate_term_vols(mkt):
     mkt.mktdata.addCoord(VolsCoord(mkt,month),vol_poly)
 
     # for (K,QD,vol) in vols_by_QD:
-    #   print dateutils.parse_month(month),"|",T,"|",S,"|",K,"|",vol,"|",QD,"|",idx
+    #   print du.parse_month(month),"|",T,"|",S,"|",K,"|",vol,"|",QD,"|",idx
     #   idx += 1
 
     # for QD in range(1,20):
     #   QD2 = float(QD) / 20
     #   v = vol_poly(QD2)
-    #   print dateutils.parse_month(month),"|",T,"|",S,"|",QD2,"|",v,"|",idx
+    #   print du.parse_month(month),"|",T,"|",S,"|",QD2,"|",v,"|",idx
     #   idx += 1
