@@ -234,15 +234,16 @@ class Series {
 Series.prototype.isSeries = true;
 
 function make_constant_series(num,sd,ed) {
+  var map;
   if(typeof(sd)=="object") {
-    var map = {};
+    map = {};
     var dt = new Date(sd.getTime());
     for(; dt <= ed; dt.setDate(dt.getDate() + 1))
       map[dateToStr(dt)] = num;
   }
 
   if(typeof(sd)=="number") {
-    var map = {};
+    map = {};
     for(var idx = sd; idx <= ed; idx++)
       map[floatToStr(idx)] = num;
   }
@@ -707,7 +708,7 @@ var interpolateFunc = math.typed('interpolate',{
 
       var interpVal;
       if(nextX == prevX) interpVal = (prevY+nextY)/2;
-      else interpVal = (nextY - prevY) / (nextX - prevX) * (parsedX - prevX) + prevY
+      else interpVal = (nextY - prevY) / (nextX - prevX) * (parsedX - prevX) + prevY;
 
       ans[x] = interpVal;
     }
