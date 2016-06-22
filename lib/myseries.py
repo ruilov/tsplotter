@@ -13,6 +13,9 @@ class MySeries(Series):
     else:
       return np.interp(x,self.index.values,self.values)
 
+  def map(self,func):
+    return MySeries(type(self).__bases__[0].map(self,func))
+
   def __getitem__(self,item):
     return mydict.generic_get(self,convert_month(item))
 

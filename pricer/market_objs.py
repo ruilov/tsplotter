@@ -19,7 +19,7 @@ class Market:
   
   # some markets overwrite these two methods
   def start_date(self,month):
-    return dateutils.month_start_date(month)    
+    return dateutils.month_start_date(month)
   def end_date(self,month):
     return dateutils.month_end_date(month)
 
@@ -35,7 +35,7 @@ class Market:
     
   def first_option(self, dt=None):
     return self.generic_nearby(self.option_expiration,dt)
-  
+
   def futures(self):
     return self.mktdata.coords["futures"][self]
 

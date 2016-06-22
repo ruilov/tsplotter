@@ -49,7 +49,6 @@ class MktData:
   def __str__(self):
     return str(self.coords)
 
-
 def new_series(): 
   return MySeries()
 
