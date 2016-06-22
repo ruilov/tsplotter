@@ -60,12 +60,20 @@ class Plotter:
   def new_client(self,client,server):
     msgs = [self.msg_plots(self.plots.keys())]
 
-    if self.start==None and self.series_type=="floats": self.start = 0
-    if self.end==None and self.series_type=="floats": self.end = max([len(x) for x in self.plots.values()])
+    if self.start==None and len(self.plots.keys())>0:
+      if self.series_type=="floats": self.start = 0
+      if self.series_type=="dates": self.start = str(min([x.index[0] for x in self.plots.values()]))
+     
+    if self.end==None and len(self.plots.keys())>0:
+      if self.series_type=="floats": self.end = max([len(x) for x in self.plots.values()])
+      if self.series_type=="dates": self.end = str(max([x.index[-1] for x in self.plots.values()]))
 
     if self.start is not None: msgs.append(self.msg_start())
     if self.end is not None: msgs.append(self.msg_end())
-    if self.formulas is not None: msgs.append(self.msg_formulas())
+
+    if self.formulas is None: self.formulas = self.plots.keys()
+    msgs.append(self.msg_formulas())
+
     if self.chart_type is not None: msgs.append(self.msg_chart_type())
     if self.chart_options is not None: msgs.append(self.msg_chart_options())
 
