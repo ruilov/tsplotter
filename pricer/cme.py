@@ -7,26 +7,25 @@ from ir_calibrator import calibrate_rates
 from vol_calibrator import calibrate_vols
 
 # The only Public method
-def init(date=None,refetch=False):
+def init(date=None,refetch=False,recalibrate=False):
   today = datetime.date.today()
 
   if not date: 
     if can_retrieve_now(): date = today
     else: date = latest_saved_raw_date()
 
-  mktdata = load_calibrated_data(date)
-  if mktdata: return mktdata
+  if not refetch and not recalibrate:
+    mktdata = load_calibrated_data(date)
+    if mktdata: return mktdata
 
   # we need to load each page and calibrate it
-  if date != today: raise Exception("cme mkt data not found")
-
   mktdata = MktData(date)
   config = cme_config()
   for mkt in config['markets']: mkt.mktdata = mktdata
 
   for page in config['pages']:
     url = config['url'].format(page)
-    contents = load_page(url,page,date,refetch)
+    contents = load_page(url,page,date,refetch,today)
     parse_file(contents,config,mktdata)
   mktdata.resort()
   calibrate(mktdata)
@@ -90,7 +89,7 @@ def latest_saved_raw_date():
 
   raise Exception("cannot find any saved mkt data")
   
-def load_page(url,pagename,date,refetch):
+def load_page(url,pagename,date,refetch,today):
   # try to load from a file
   if not refetch:
     try:
@@ -102,8 +101,8 @@ def load_page(url,pagename,date,refetch):
       pass
 
   # we need to load from the internet. Are we allowed to do that?
-  if not can_retrieve_now(): 
-    raise Exception("mktdata for " + str(date) + "not found")
+  if date != today: raise Exception("mktdata for " + str(date) + "not found")
+  if not can_retrieve_now(): raise Exception("mktdata for " + str(date) + "not found")
  
   # fetch from the CME
   print "loading data from " + url + " for date " + str(date)

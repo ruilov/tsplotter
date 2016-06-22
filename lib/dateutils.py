@@ -1,4 +1,4 @@
-import datetime,holidays,dateutil.easter
+import datetime,holidays,dateutil.easter,calendar
 import calendars.usa,calendars.europe
 
 def month_generator(start_month,end_month):
@@ -101,6 +101,15 @@ def add_months(dt,n):
       m = 12
       y -= 1
   return datetime.date(y,m,day)
+
+def month_start_date(month):
+  dt = parse_month(month)
+  return datetime.date(dt.year,dt.month,1)
+    
+def month_end_date(month):
+  dt = parse_month(month)
+  (weekday,last) = calendar.monthrange(dt.year,dt.month)
+  return datetime.date(dt.year,dt.month,last)
 
 def parse_month(token):
   token = token.lower()

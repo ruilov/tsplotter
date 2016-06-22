@@ -1,4 +1,4 @@
-import lib.dateutils as dateutils,calendar,datetime
+import lib.dateutils as dateutils,datetime
 
 class Market:
 
@@ -10,6 +10,18 @@ class Market:
     self.cme_option_code = cme_option_code
     self.cme_strike_multiplier = cme_strike_multiplier
     self.mktdata = None
+
+  def futures_expiration(self,month):
+    raise Exception("not defined")
+  
+  def option_expiration(self,month):
+    raise Exception("not defined")
+  
+  # some markets overwrite these two methods
+  def start_date(self,month):
+    return dateutils.month_start_date(month)    
+  def end_date(self,month):
+    return dateutils.month_end_date(month)
 
   def generic_nearby(self, expiration_func, dt=None):
     if not dt: dt = self.mktdata.pricing_date
@@ -108,12 +120,3 @@ def wti_futures_expiration(month):
     y -= 1
 
   return dateutils.minusb(datetime.date(y,m,25),3,"cme")
-
-def month_start_date(month):
-  dt = dateutils.parse_month(month)
-  return datetime.date(dt.year,dt.month,1)
-
-def month_end_date(month):
-  dt = dateutils.parse_month(month)
-  (weekday,last) = calendar.monthrange(dt.year,dt.month)
-  return datetime.date(dt.year,dt.month,last)
