@@ -22,4 +22,3 @@ print("")
 
 print(WTI.mktdata.pricing_date)
 print("")
-print("")
