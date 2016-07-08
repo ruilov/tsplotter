@@ -1,0 +1,10 @@
+OXY|Occidental
+EOG|Eog
+PXD|Pioneer
+APC|Anadarko
+APA|Apache
+DVN|Devon
+CXO|Concho
+CLR|Continental
+SWN|Southwestern
+CHK|Chesapeake

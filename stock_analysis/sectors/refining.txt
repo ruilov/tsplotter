@@ -1,0 +1,5 @@
+PSX|Phillips66
+MPC|Marathon
+VLO|Valero
+HFC|Holly
+WNR|Western

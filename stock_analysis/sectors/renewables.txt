@@ -1,0 +1,3 @@
+FSLR|First solar
+SCTY|SolarCity
+SPWR|Sunpower

@@ -1,0 +1,9 @@
+DUK|Duke
+NEE|Nextera
+D|Dominion
+SO|Southern Company
+EXC|Exelon
+AEP|American Electric Power
+SRE|Sempra
+PPL|PPL
+FE|First Energy

@@ -1,0 +1,6 @@
+EPD|Enterprise
+KMI|Kinder morgan
+ETP|energy transfer partners
+MMP|Magellan
+WMB|the williams companies
+SEP|spectra
