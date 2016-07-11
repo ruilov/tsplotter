@@ -1,27 +1,51 @@
 from panda_utils import *
 import itertools
 
+def print_stds(sector_returns):
+  for sector in sectors:
+    sector_std = np.std(sector_returns[sector]) * math.sqrt(252)
+    print(sector,"|",sector_std)
+
+def remove_component(sector_returns,component):
+  component_std = np.std(sector_returns[component])
+  answer = {}
+  for sector in sectors:
+    sector_std = np.std(sector_returns[sector])    
+    corr = sector_returns[sector].corr(sector_returns[component])
+    beta = corr * sector_std / component_std
+    answer[sector] = sector_returns[sector] - sector_returns[component] * beta
+  return answer
+
 def print_corrs(sector_returns):
+  print("|",end="")
+  for sector1 in sectors: print(sector1,"|",end="")
+  print("")
+
   for sector1 in sectors:
-    print sector1,"|",
+    print(sector1,"|",end="")
     for sector2 in sectors:
       c = sector_returns[sector1].corr(sector_returns[sector2])
-      print c,"|",
-    print ""
+      print(c,"|",end="")
+    print("")
 
-def print_betas(sector_returns,to,remove):
-  to_std = np.std(sector_returns[to])
-  for sector in sectors:
-    sector_std = np.std(sector_returns[sector])
-    corr = sector_returns[sector].corr(sector_returns[to])
-    beta = corr * sector_std / to_std
-    if remove and sector!=to:
-      sector_returns[sector] -= sector_returns[to]*beta
-    print sector,"|",beta,"|",sector_std*math.sqrt(252),"|",corr
 
-# TODO: remove the spy component
+def print_betas(sector_returns):
+  print("|",end="")
+  for sector1 in sectors: print(sector1,"|",end="")
+  print("")
 
-sectors = ["EP","power","services","midstream","refining","renewables","spy","cl12"]
+  for sector1 in sectors:
+    sector1_std = np.std(sector_returns[sector1])
+    print(sector1,"|",end="")
+    for sector2 in sectors:
+      sector2_std = np.std(sector_returns[sector2])
+      corr = sector_returns[sector2].corr(sector_returns[sector1])
+      beta = corr * sector1_std / sector2_std
+      print(beta,"|",end="")
+    print("")
+
+sectors = ["EP","power","services","midstream","refining","renewables","spy","cl12","ng12"]
+
 portfolio = {
   'midstream': .2,
   'services': .2,
@@ -41,15 +65,16 @@ for sector in sectors:
   for ticker in tickers:
     # print ticker
     try: prices[ticker] = close_prices(ticker)[start_date:end_date]
-    except: 
-      print ticker,"missing"
+    except Exception as e: 
+      print(ticker,"missing")
+      print(e)
       continue
 
     common_dates = common_dates.intersection(prices[ticker].index) 
 
 prices = {k: v[common_dates] for k,v in prices.items()}
-print "common dates =", len(common_dates)
-print "first date = ",common_dates[0].date()
+print("common dates =", len(common_dates))
+print("first date = ",common_dates[0].date())
 
 # calc the returns for each sector
 sector_returns = {}
@@ -63,32 +88,11 @@ for sector in sectors:
 sectors.append('port')
 sector_returns['port'] = sum([sector_returns[s]*w for s,w in portfolio.items()])
 
-# calc betas to crude
-print "crude betas"
-print_betas(sector_returns,'cl12',False)
-print ""
-
-# print "gas betas"
-# print_betas(sector_returns,'ng12',False)
-# print ""
-
-print "corrs"
-print_corrs(sector_returns)
-print ""
-
-# remove the spy compomnent
-print "spy betas"
-print_betas(sector_returns,'spy',True)
-print ""
-
-print "adj crude betas"
-print_betas(sector_returns,'cl12',False)
-print ""
-
-# print "adj gas betas"
-# print_betas(sector_returns,'ng12',False)
-# print ""
-
-print "adj corrs"
-print_corrs(sector_returns)
-print ""
+adj_sector_returns = remove_component(sector_returns,"spy")
+for rets in [sector_returns,adj_sector_returns]:
+  print_stds(rets)
+  print("")
+  print_corrs(rets)
+  print("")
+  print_betas(rets)
+  print("\n")

@@ -1,14 +1,17 @@
 import datetime,math
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
+def ticker_filename(ticker):
+  # return '/Users/ruilov/stock_data/' + ticker + '.csv'
+  return 'stock_prices\\' + ticker + '.csv'
 
 def print_series(ser):
   for dt,val in ser.iteritems():
-    print dt.date(),"|",val
+    print(dt.date(),"|",val)
 
 def close_prices(ticker):
-  filename = '/Users/ruilov/stock_data/' + ticker + '.csv'
+  filename = ticker_filename(ticker)
   col_names = np.array(['close'])
   contents = pd.read_csv(filename,header=None,names=col_names,parse_dates=True)
   return contents['close']

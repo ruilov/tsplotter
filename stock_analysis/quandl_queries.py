@@ -1,3 +1,4 @@
+from panda_utils import *
 import quandl
 import matplotlib.pyplot as plt
 
@@ -19,5 +20,5 @@ for ticker in tickers:
   close_series = pandas['Settle'] # for CHRIS
   print ticker,close_series['2016-05-10':]
 
-  out_file = '/Users/ruilov/stock_data/' + ticker + '.csv'
+  out_file = ticker_filename(ticker)
   close_series.to_csv(out_file)
