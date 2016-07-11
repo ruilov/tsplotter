@@ -95,7 +95,7 @@ def add_months(dt,n):
   day = dt.day
   m += n
   if m > 12:
-    y += m/12
+    y += int(m/12)
     m = m%12
     if m == 0:
       m = 12
