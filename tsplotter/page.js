@@ -9,7 +9,7 @@ class Page {
       "TAB": () => this.formula_area.ctrl_t_cb(),
       "CTRL+B": () => this.formula_area.ctrl_b_cb(),
       "CTRL+H": () => this.formula_area.ctrl_h_cb(),
-      "CTRL+T": () => this.formula_area.ctrl_t_cb(),
+      "CTRL+ALT+T": () => this.formula_area.ctrl_t_cb(),
       "CTRL+E": () => this.formula_area.ctrl_e_cb(),
       "CTRL+ALT+C": () => this.formula_area.ctrl_alt_c_cb(),
     };
