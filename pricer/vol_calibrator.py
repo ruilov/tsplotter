@@ -1,6 +1,6 @@
-import quant,numpy as np,math,lib.dateutils as du,gabillon
+import pricer.quant as quant,numpy as np,math,lib.dateutils as du,pricer.gabillon
 from heapq import nsmallest
-from markets import *
+from pricer.markets import *
 from lib.myseries import MySeries
 from tsplotter.tsplotter import Plotter
 

@@ -1,6 +1,6 @@
 from lib.myseries import MySeries
-from markets import *
-import lib.dateutils,quant
+from pricer.markets import *
+import lib.dateutils,pricer.quant as quant
 import numpy as np
 
 def calibrate_rates_mkt(mktdata,mkt):

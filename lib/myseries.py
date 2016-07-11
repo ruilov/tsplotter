@@ -1,6 +1,6 @@
 from pandas import Series
 import numpy as np
-import mydict,dateutils,datetime,collections
+import lib.mydict,lib.dateutils,datetime,collections
 
 class MySeries(Series):
   def interp(self,x):
@@ -17,7 +17,7 @@ class MySeries(Series):
     return MySeries(type(self).__bases__[0].map(self,func))
 
   def __getitem__(self,item):
-    return mydict.generic_get(self,convert_month(item))
+    return lib.mydict.generic_get(self,convert_month(item))
 
   def __contains__(self,item):
     return type(self).__bases__[0].__contains__(self,convert_month(item))
@@ -27,10 +27,10 @@ class MySeries(Series):
 
   def itermonths(self):
     for dt,val in self.iteritems():
-      yield (dateutils.date_to_month(dt),val)
+      yield (lib.dateutils.date_to_month(dt),val)
 
 def convert_month(key):
   if type(key)==str:
-    dt = dateutils.parse_month(key)
+    dt = lib.dateutils.parse_month(key)
     if dt: return dt
   return key

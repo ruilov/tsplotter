@@ -1,10 +1,11 @@
-import urllib2,datetime,os.path,dill,pickle
+from urllib.request import urlopen
+import datetime,os.path,pickle
 import lib.dateutils as dateutils
 from datetime import date
-from markets import *
-from mktdata import MktData
-from ir_calibrator import calibrate_rates
-from vol_calibrator import calibrate_vols
+from pricer.markets import *
+from pricer.mktdata import MktData
+from pricer.ir_calibrator import calibrate_rates
+from pricer.vol_calibrator import calibrate_vols
 
 # The only Public method
 def init(date=None,refetch=False,recalibrate=False):
@@ -69,7 +70,7 @@ def filename_calibrated(date):
   return mktdata_dir() + "cme-calibrated-" + str(date) + ".bin"
 
 def can_retrieve_now():
-  return not dateutils.isNotBizDate(datetime.date.today(),"cme") and datetime.datetime.now().hour >= 16
+  return not dateutils.isNotBizDate(datetime.date.today(),"cme") and datetime.datetime.now().hour >= 13
 
 def filename_raw_data(page,date):
   return mktdata_dir() + "cme-" + page + "-" + str(date) + ".mkt"
@@ -105,9 +106,10 @@ def load_page(url,pagename,date,refetch,today):
   if not can_retrieve_now(): raise Exception("mktdata for " + str(date) + "not found")
  
   # fetch from the CME
-  print "loading data from " + url + " for date " + str(date)
-  response = urllib2.urlopen(url)
+  print("loading data from " + url + " for date " + str(date))
+  response = urlopen(url)
   contents = response.read()
+  contents = contents.decode("utf-8")
   file = open(filename_raw_data(pagename,date),'w')
   file.write(contents)
   file.close()
@@ -225,6 +227,7 @@ def parse_file(file_contents,config,mktData):
     if section['type'] == "future":
       code = section['code']
       if code not in mkts_by_future: continue
+
       mkt = mkts_by_future[code]
       mkt.description = section['description']
       for row in section['data']:

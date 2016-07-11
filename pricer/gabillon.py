@@ -70,7 +70,7 @@ def sanity_checks():
   assert abs(tv-termv)<1e-14
 
   var = term_var_closed(sigma_s,T,sigma_l,beta,corr)
-  print math.sqrt(var)
+  print(math.sqrt(var))
 
   lv = local_vol_from_term_var(var,T,sigma_l,beta,corr)
   assert abs(lv-sigma_s)<1e-14
@@ -98,7 +98,7 @@ def sanity_checks():
       t += dt
     ps.append(p)
 
-  print np.average(ps)
-  print np.std(ps)
+  print(np.average(ps))
+  print(np.std(ps))
 
 # sanity_checks()

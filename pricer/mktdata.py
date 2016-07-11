@@ -1,6 +1,6 @@
 from lib.mydict import MyDict
 from lib.myseries import MySeries
-import markets
+import pricer.markets
 
 class MktData:
   def __init__(self,pricing_date):
