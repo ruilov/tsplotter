@@ -4,6 +4,7 @@ import lib.dateutils as dateutils
 from datetime import date
 from pricer.markets import *
 from pricer.mktdata import MktData
+import pricer.mktdata
 from pricer.ir_calibrator import calibrate_rates
 from pricer.vol_calibrator import calibrate_vols
 
@@ -15,13 +16,16 @@ def init(date=None,refetch=False,recalibrate=False):
     if can_retrieve_now(): date = today
     else: date = latest_saved_raw_date()
 
+  config = cme_config()
+
   if not refetch and not recalibrate:
     mktdata = load_calibrated_data(date)
-    if mktdata: return mktdata
+    if mktdata: 
+      for mkt in config['markets']: mkt.mktdata = mktdata
+      return mktdata
 
   # we need to load each page and calibrate it
   mktdata = MktData(date)
-  config = cme_config()
   for mkt in config['markets']: mkt.mktdata = mktdata
 
   for page in config['pages']:
@@ -47,16 +51,16 @@ def load_calibrated_data(date):
   filename = filename_calibrated(date)
   if not os.path.isfile(filename): return None
   file = open(filename,'r')
-  data = pickle.load(file)
+  s = file.read()
   file.close()
-
-  data.pickle_load_fix_markets()
+  data = pricer.mktdata.from_saved(s)
   return data
 
 def save_calibrated_data(data):
   filename = filename_calibrated(data.pricing_date)
   file = open(filename,'w')
-  pickle.dump(data,file)
+  s = data.to_save()
+  file.write(s)
   file.close()
 
 def mktdata_dir():
@@ -70,7 +74,7 @@ def filename_calibrated(date):
   return mktdata_dir() + "cme-calibrated-" + str(date) + ".bin"
 
 def can_retrieve_now():
-  return not dateutils.isNotBizDate(datetime.date.today(),"cme") and datetime.datetime.now().hour >= 13
+  return not dateutils.isNotBizDate(datetime.date.today(),"cme") and datetime.datetime.now().hour >= 16
 
 def filename_raw_data(page,date):
   return mktdata_dir() + "cme-" + page + "-" + str(date) + ".mkt"

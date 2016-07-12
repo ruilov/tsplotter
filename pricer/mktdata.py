@@ -1,6 +1,7 @@
 from lib.mydict import MyDict
 from lib.myseries import MySeries
-import pricer.markets
+import lib.dateutils as dateutils
+import pricer.markets,datetime,numpy as np
 
 class MktData:
   def __init__(self,pricing_date):
@@ -15,21 +16,26 @@ class MktData:
       self.coords[tipe][get_or_series(coord.market)][dt] = value
 
     if tipe == "option price":
-      self.coords[tipe][coord.market][get_or_series(coord.option_type)][dt][coord.strike] = value
+      self.coords[tipe][coord.market][get_or_series(coord.option_type)][dt][coord.strike] = value # the strike dimension will be created as another MySeries under the hood
 
-  # the markets that we get when we load a mktdata instance will be different from the ones defined in markets.py
-  # replace them all
-  def pickle_load_fix_markets(self):
-    for mkt in markets.MARKETS:
-      mkt.mktdata = self
+  def to_save(self):
+    ans = str(self.pricing_date) + "\n"
+    for tipe in self.coords:
+      ans += tipe + "\n"
+      for mkt,mkt_vals in self.coords[tipe].items():
+        if tipe != "option price":
+          for dt,val in mkt_vals.iteritems():
+            val_str = str(val)
+            if tipe == "vols": val_str = "|".join([str(x) for x in list(val.c)])
+            ans += str(mkt) + "|" + str(dt) + "|" + val_str + "\n"
+        else:
+          for opt_type,type_vals in mkt_vals.items():
+            for dt,dt_vals in type_vals.iteritems():
+              for strike,val in dt_vals.iteritems():
+                ans += str(mkt) + "|" + str(dt) + "|" + opt_type + "|" + str(strike) + "|" + str(val) + "\n"
+      ans += "\n"
+    return ans
 
-    mkt_by_name = {x.name: x for x in markets.MARKETS}
-    for tipe,tipe_vals in self.coords.items():
-      new_tipe_vals = MyDict()
-      for mkt,mkt_vals in tipe_vals.items():
-        new_tipe_vals[mkt_by_name[mkt.name]] = mkt_vals
-      self.coords[tipe] = new_tipe_vals
-    
   def resort(self):
     for tipe,tipe_markets in self.coords.items():
       for market,market_val in tipe_markets.items():
@@ -50,4 +56,36 @@ def new_series():
 
 def get_or_series(v):
   return (v, new_series)
-  
+
+def from_saved(s):
+  mkt_by_name = {x.name: x for x in pricer.markets.MARKETS}
+  lines = s.split("\n")
+  pricing_date = dateutils.parse_date(lines[0])
+  m = MktData(pricing_date)
+
+  tipe = None
+  for line_num in range(1,len(lines)):
+    line = lines[line_num]
+
+    if tipe == None: 
+      tipe = line
+      continue
+
+    if line == "":
+      tipe = None
+      continue
+
+    tokens = line.split("|")
+    market = mkt_by_name[tokens[0]]
+    dt = dateutils.parse_date(tokens[1])
+
+    if tipe != "option price":
+      if tipe != "vols": value = float(tokens[2])
+      else: value = np.poly1d([float(x) for x in tokens[2:]])
+      m.coords[tipe][get_or_series(market)][dt] = value
+    else:
+      option_type = tokens[2]
+      strike = float(tokens[3])
+      value = float(tokens[4])
+      m.coords[tipe][market][get_or_series(option_type)][dt][strike] = value
+  return m

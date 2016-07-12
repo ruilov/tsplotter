@@ -1,4 +1,4 @@
-import pricer.quant
+import pricer.quant as quant
 import lib.dateutils as dateutils
 from pricer.markets import FF
 

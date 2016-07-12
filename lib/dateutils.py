@@ -129,6 +129,10 @@ def date_to_month(date):
   months = ["JAN","FEB","MAR","APR","MAY","JUN","JLY","AUG","SEP","OCT","NOV","DEC"]
   return months[date.month-1] + str(date.year)[2:]
 
+def parse_date(s):
+  tokens = s.split("-")
+  return datetime.date(int(tokens[0]),int(tokens[1]),int(tokens[2]))
+
 [year_from,year_to] = [2014,2040]
 holiday_calendars = {
   "cme": cme_holidays(year_from,year_to),
