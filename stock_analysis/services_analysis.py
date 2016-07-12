@@ -10,6 +10,9 @@ portfolio = {
   'power': .2
 }
 
+# sectors = ["services_large_cap","services_capital_equip","services_smid","services_offshore","spy","cl12","ng12"]
+# portfolio = {k: 0.2 for k in sectors}
+
 start_date = '2014-05-20'
 end_date = '2016-05-20'
 

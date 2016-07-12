@@ -1,0 +1,8 @@
+RIG|transocean
+ESV|ensco
+DO|diamond
+NE|noble corp
+RDC|rowan companies
+ATW|atwood oceanics
+ORIG|ocean rig UWD
+PACD|pacific drilling

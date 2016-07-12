@@ -5,20 +5,10 @@ from pricer.option import Option
 
 pricer.cme.init()
 
-for dt,val in RB.futures().iteritems():
-  print(dt,"|",val)
-print("")
-
-for month in dateutils.month_generator("JAN18","Dec20"):
-  put = Option(WTI,month,"put").set_atm()
-  atm = put.price()
-  put.strike -= 10
-  atm10 = put.price()
-  print(put.start_date(),"|",put.underlying_price(),"|",atm,"|",atm10)
-
-print("")
-print(LIBOR.rates())
-print("")
-
-print(WTI.mktdata.pricing_date)
-print("")
+for month in dateutils.month_generator("JAN17","Dec20"):
+  put = Option(WTI,month,"put")
+  put.strike = 30.0
+  p30 = put.price()
+  put.strike = 26.0
+  p25 = put.price()
+  print(put.start_date(),"|",put.time_to_expiration(),"|",put.underlying_price(),"|",put.vol(),"|",put.interest_rate(),"|",p25,"|",p30)

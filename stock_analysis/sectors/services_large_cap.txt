@@ -1,0 +1,4 @@
+SLB|schlumberger
+HAL|halliburton
+BHI|baker hughes
+WFT|weatherford
