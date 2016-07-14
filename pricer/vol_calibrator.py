@@ -85,8 +85,10 @@ def calibrate_term_vols(mkt):
         for K,P in opts[month].iteritems():
           intrinsic = quant.intrinsic(callput,S,K,df)
           if intrinsic > S*0.02: continue # too much IR dependency, and the CME seems to be bad at handling rates, better to look at otm options
+          if abs(P-0.01) < 1e-10: continue # the CME seems to use 0.01 for options which have zero model value, ie very otm
+          # if K / S > 3.0 or K / S < 0.33: continue # too otm 
 
-          # print P,callput,S,K,T,r,quant.blackScholes_price(callput,S,K,T,1e-20,r),quant.blackScholes_price(callput,S,K,T,6,r)
+          # print(month,P,callput,S,K,T,r,quant.blackScholes_price(callput,S,K,T,1e-20,r),quant.blackScholes_price(callput,S,K,T,6,r))
           vol = quant.implied_vol(P,callput,S,K,T,r)
           vols.append((K,vol))
 
