@@ -1,5 +1,4 @@
-import pricer.quant as quant
-import lib.dateutils as dateutils
+import pricer.quant as quant, lib.dateutils as dateutils, math
 from pricer.markets import FF
 
 class Option:
@@ -40,6 +39,9 @@ class Option:
 
   def interest_rate(self):
     return self.ir_curve.rate(self.expiration_date())
+
+  def discount_factor(self):
+    return math.exp( (-1.) * self.interest_rate() * self.time_to_expiration())
 
   def price(self):
     return quant.blackScholes_price(self.callput,self.underlying_price(),self.strike,self.time_to_expiration(),
