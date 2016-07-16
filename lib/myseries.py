@@ -8,7 +8,7 @@ class MySeries(Series):
       return [self.interp(y) for y in x]
     elif type(x)==datetime.date:
       idx = self.index.values
-      idx = [(x-idx[0]).days for x in idx]
+      idx = [(y-idx[0]).days for y in idx]
       return np.interp((x-self.index[0]).days,idx,self.values)
     else:
       return np.interp(x,self.index.values,self.values)
