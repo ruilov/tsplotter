@@ -1,4 +1,8 @@
-from urllib.request import urlopen
+try:
+  from urllib.request import urlopen
+except ImportError:
+  from urllib import urlopen
+
 import datetime,os.path,pickle
 import lib.dateutils as dateutils
 from datetime import date
