@@ -16,7 +16,7 @@ from pricer.vol_calibrator import calibrate_vols
 def init(date=None,refetch=False,recalibrate=False):
   today = datetime.date.today()
 
-  if not date: 
+  if not date:
     if can_retrieve_now(): date = today
     else: date = latest_saved_raw_date()
 
@@ -24,7 +24,7 @@ def init(date=None,refetch=False,recalibrate=False):
 
   if not refetch and not recalibrate:
     mktdata = load_calibrated_data(date)
-    if mktdata: 
+    if mktdata:
       for mkt in config['markets']: mkt.mktdata = mktdata
       return mktdata
 
@@ -86,7 +86,7 @@ def filename_raw_data(page,date):
 def is_raw_data_saved(date):
   config = cme_config()
   for page in config['pages']:
-    if not os.path.isfile(filename_raw_data(page,date)): 
+    if not os.path.isfile(filename_raw_data(page,date)):
       return False
   return True
 
@@ -97,7 +97,7 @@ def latest_saved_raw_date():
     if is_raw_data_saved(dt): return dt
 
   raise Exception("cannot find any saved mkt data")
-  
+
 def load_page(url,pagename,date,refetch,today):
   # try to load from a file
   if not refetch:
@@ -106,13 +106,13 @@ def load_page(url,pagename,date,refetch,today):
       contents = file.read()
       file.close()
       return contents
-    except Exception as e:
+    except Exception:
       pass
 
   # we need to load from the internet. Are we allowed to do that?
   if date != today: raise Exception("mktdata for " + str(date) + "not found")
   if not can_retrieve_now(): raise Exception("mktdata for " + str(date) + "not found")
- 
+
   # fetch from the CME
   print("loading data from " + url + " for date " + str(date))
   response = urlopen(url)
@@ -155,12 +155,11 @@ def parse_file(file_contents,config,mktData):
     if len(line_split)<2: continue
 
     isFirstDigit = False
-    try: 
+    try:
       int(line_split[0])
       isFirstDigit = True
-    except Exception as e: isFirstDigit = False
+    except Exception: isFirstDigit = False
 
-    line_type = None
     if dateutils.parse_month(line_split[1]) and ("CALL" in line or "PUT" in line):
       all_sections.append(section)
       section = {
@@ -176,35 +175,35 @@ def parse_file(file_contents,config,mktData):
       assert section["type"]=="future"
       # print line
       month_str = line[0:5]
-      open_str = line[5:15]
-      high_str = line[15:26]
-      low_str = line[26:36]
-      last_str = line[36:46]
+      # open_str = line[5:15]
+      # high_str = line[15:26]
+      # low_str = line[26:36]
+      # last_str = line[36:46]
       sett_str = line[46:56]
-      chg_str = line[56:66]
-      est_vol_str = line[66:76]
+      # chg_str = line[56:66]
+      # est_vol_str = line[66:76]
       # print line
       # print month_str + "|" + open_str + "|" + high_str + "|" + low_str + "|" + last_str + "|" + sett_str + "|" + chg_str + "|" + est_vol_str
       if "----" in sett_str: continue
-      section["data"].append({"month": month_str, "settlement": parse_quote(sett_str)});
-      
+      section["data"].append({"month": month_str, "settlement": parse_quote(sett_str)})
+
     elif isFirstDigit:
       if section["type"]=="daily option": continue
       assert section["type"]=="option"
 
       strike_str = line[0:5]
-      open_str = line[5:15]
-      high_str = line[15:26]
-      low_str = line[26:36]
-      last_str = line[36:46]
+      # open_str = line[5:15]
+      # high_str = line[15:26]
+      # low_str = line[26:36]
+      # last_str = line[36:46]
       sett_str = line[46:56]
-      chg_str = line[56:66]
-      est_vol_str = line[66:76]
+      # chg_str = line[56:66]
+      # est_vol_str = line[66:76]
       # print line
       # print strike_str + "|" + open_str + "|" + high_str + "|" + low_str + "|" + last_str + "|" + sett_str + "|" + chg_str + "|" + est_vol_str
       if "----" in sett_str: continue
-      section["data"].append({"strike": float(strike_str), "settlement": parse_quote(sett_str)});
-            
+      section["data"].append({"strike": float(strike_str), "settlement": parse_quote(sett_str)})
+
     elif "DAILY" in line and ("CALL" in line or "PUT" in line):
       all_sections.append(section)
       section = {

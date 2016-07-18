@@ -14,4 +14,4 @@ for month in dateutils.month_generator("AUG16","Dec19"):
   p35 = put.price()
   put.strike = 30.0
   p30 = put.price()
-  print put.start_date(),"|",vol,"|",put.underlying_price(),"|",p40,"|",p35,"|",p30
+  print(put.start_date(),"|",vol,"|",put.underlying_price(),"|",p40,"|",p35,"|",p30)
