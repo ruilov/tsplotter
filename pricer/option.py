@@ -1,6 +1,8 @@
 import pricer.quant as quant, lib.dateutils as dateutils, math
 from pricer.markets import FF
 
+use_vol_wings = True
+
 class Option:
   def __init__(self,market,month,callput,strike=None):
     self.market = market
@@ -35,7 +37,8 @@ class Option:
     return quant.quick_delta(self.underlying_price(),self.strike,self.time_to_expiration(),self.atm_vol())
 
   def vol(self):
-    return self.market.vol(self.month,self.quick_delta())
+    if use_vol_wings: return self.market.vol(self.month,self.quick_delta())
+    else: return self.atm_vol()
 
   def interest_rate(self):
     return self.ir_curve.rate(self.expiration_date())
