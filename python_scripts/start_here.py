@@ -5,7 +5,7 @@ from pricer.option import Option
 
 pricer.cme.init()
 
-for month in dateutils.month_generator("AUG16","Dec19"):
+for month in dateutils.month_generator("SEP16","Dec19"):
   put = Option(WTI,month,"put").set_atm()
   vol = put.vol()
   put.strike = 40.0
