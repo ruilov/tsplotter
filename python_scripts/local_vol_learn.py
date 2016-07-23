@@ -4,13 +4,6 @@ from pricer.option import Option
 from lib.myseries import MySeries
 from scipy.stats import norm
 
-def total_var_old(log_strike,time,vol_poly,total_atm_vol):
-  # qd = norm.cdf(log_strike/total_atm_vol)
-  qd = 0.5
-  wing_vol = vol_poly(qd)
-  return wing_vol*wing_vol*time
-  # return 0.4*0.4*time
-
 def interp_polys(t,qd,prev_t,prev_poly,next_t,next_poly):
   if prev_t == next_t: return next_poly(qd)
 
@@ -25,11 +18,18 @@ def total_var(log_strike,time,vol_ts,vol_polys):
     if idx == len(vol_ts): idx -= 1
     prev_idx = idx
   else: prev_idx = idx-1
-
   atm_vol = interp_polys(time,0.5,vol_ts[prev_idx],vol_polys[prev_idx],vol_ts[idx],vol_polys[idx])
   qd = norm.cdf(log_strike / (atm_vol * math.sqrt(time)))
   wing_vol = interp_polys(time,qd,vol_ts[prev_idx],vol_polys[prev_idx],vol_ts[idx],vol_polys[idx])
   return wing_vol * wing_vol * time
+
+def strike_range(num_strikes,time,vol_ts,vol_polys):
+  tav = math.sqrt(total_var(0.0,time,vol_ts,vol_polys))
+  low_strike = math.exp(-4*tav - tav*tav/2)
+  high_strike = math.exp(3*tav - tav*tav/2)
+  delta_strike = (high_strike - low_strike) / (num_strikes-1)
+  strikes = list(np.arange(low_strike,high_strike+delta_strike-1e-7,delta_strike))
+  return strikes
 
 def main():
   pricer.cme.init()
@@ -53,11 +53,8 @@ def main():
   # vol_idxs = list(range(0,len(vol_ts)))
 
   for ti,time in enumerate(times):
-    tav = math.sqrt(total_var(0.0,time,vol_ts,vol_polys))
-    low_strike = math.exp(-4*tav - tav*tav/2)
-    high_strike = math.exp(3*tav - tav*tav/2)
-    delta_strike = (high_strike - low_strike) / (num_strikes-1)
-    for si,strike in enumerate(np.arange(low_strike,high_strike+delta_strike-1e-7,delta_strike)):
+    srange = strike_range(num_strikes,time,vol_ts,vol_polys)
+    for si,strike in enumerate(srange):
       strikes[ti][si] = strike
 
       # the following math is described in http://www.math.ku.dk/~rolf/teaching/ctff03/Gatheral.1.pdf
@@ -89,7 +86,7 @@ def main():
       cum_probs[ti][si] = 1.0+dprice_dk
 
   # ======================================================================
-  random.seed(4)
+  random.seed(6)
 
   num_paths = 30000
   strike_idxs = list(range(0,num_strikes))
@@ -120,9 +117,9 @@ def main():
 
   print option.price(),"|",np.mean(pays)
 
-# cProfile.run('main()',"stats")
-# main()
+main()
 
-import pstats
-p = pstats.Stats("stats")
-p.strip_dirs().sort_stats("cumtime").print_stats()
+# cProfile.run('main()',"stats")
+# import pstats
+# p = pstats.Stats("stats")
+# p.strip_dirs().sort_stats("cumtime").print_stats()
