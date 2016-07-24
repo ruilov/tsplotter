@@ -99,7 +99,7 @@ def monte_carlo(local_vols_arr,num_paths):
   answer = []
   for ei,elem in enumerate(local_vols_arr):
     if ei == 0: continue
-    [dt,log_strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei]["log_strikes"],local_vols_arr[ei]["local_vols"],elem["record"]]
+    [dt,log_strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei-1]["log_strikes"],local_vols_arr[ei-1]["local_vols"],elem["record"]]
     rands = [random.gauss(0,1) for x in range(0,num_paths/2)]
     rands = rands + [-x for x in rands]
 
