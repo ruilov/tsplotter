@@ -51,7 +51,7 @@ def local_vol_calc(log_strike,time,vols):
   var_high_t = total_var(log_strike,time+eps,vols)
   dw_dt = (var_high_t - var_base)/eps
 
-  # if dw_dt < 0: return 0.0  # negative forward variance!
+  if dw_dt < 0: return 0.0  # negative forward variance!
   
   z = log_strike / var_base
   local_var = dw_dt / (1.0 - z * dw_dy + 0.25 * (-0.25 - 1.0/var_base + z*z) * dw_dy * dw_dy + 0.5 * dw_dy2)
@@ -74,6 +74,7 @@ def calib_local_vols(mkt,sim_dates):
   vols = {"ts": vol_ts, "polys": vol_polys}
   num_strikes = 10
   answer = []
+  answer.append({"log_strikes": [0.0], "local_vols": [vol_polys[0](0.5)]})
 
   sim_days = [(x-mkt.mktdata.pricing_date).days for x in sim_dates]
   little_sim_days = make_little_sim_days(sim_days)
@@ -94,10 +95,11 @@ def calib_local_vols(mkt,sim_dates):
   
 def monte_carlo(local_vols_arr,num_paths):
   eps = 1e-4
-  path_vals = [0.0] * num_paths
+  path_vals = [0.0] * num_paths # paths are in log space
   answer = []
-  for elem in local_vols_arr:
-    [dt,log_strikes,local_vols,record] = [elem["dt"],elem["log_strikes"],elem["local_vols"],elem["record"]]
+  for ei,elem in enumerate(local_vols_arr):
+    if ei == 0: continue
+    [dt,log_strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei]["log_strikes"],local_vols_arr[ei]["local_vols"],elem["record"]]
     rands = [random.gauss(0,1) for x in range(0,num_paths/2)]
     rands = rands + [-x for x in rands]
 
