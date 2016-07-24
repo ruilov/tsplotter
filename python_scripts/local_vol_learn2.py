@@ -23,7 +23,7 @@ def pp(strike,t):
 num_paths = 10000
 num_strikes = 10
 eps = 1e-3
-dt = 0.01
+dt = 0.2
 high_t = 1.0
 
 for seed in range(1,100):
@@ -69,8 +69,12 @@ for seed in range(1,100):
     rands = rands + [-x for x in rands]
 
     for path_num,path_val in enumerate(path_vals):
-      local_vol = np.interp(path_val,log_strikes,local_vols) * math.sqrt(dt)
-      path_vals[path_num] += rands[path_num] * local_vol - local_vol * local_vol / 2
+      local_vol = np.interp(path_val,log_strikes,local_vols)
+      path_vals[path_num] += rands[path_num] * local_vol * math.sqrt(dt) - local_vol * local_vol * dt / 2
+
+      local_vol_high = np.interp(path_val + eps,log_strikes,local_vols)
+      local_vol_deriv = (local_vol_high-local_vol)/eps
+      path_vals[path_num] += 0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt
 
   path_vals = map(math.exp,path_vals)
   strike = 0.8
