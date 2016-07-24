@@ -60,27 +60,20 @@ def local_vol_calc(log_strike,time,vols):
 
 # these are the days we'll actually simulate. The argument sim_days are the days the user wants to observe
 # note that 'days' refers to the number of days from today to that date
-def make_little_sim_days(sim_days,max_days=1):
+def make_little_sim_days(sim_days,max_days=3):
   little_sim_days = list(range(max_days,sim_days[-1]+max_days,max_days))
   for day in sim_days:
     idx = bisect.bisect_left(little_sim_days,day)
     if little_sim_days[idx] != day: little_sim_days.insert(idx,day)
   return little_sim_days
 
-def calib_local_vols(mkt,sim_dates):
-  vol_series = WTI.vols()
-  vol_ts = [du.dt(mkt.mktdata.pricing_date,x) for x in vol_series.index]
-  vol_polys = vol_series.values
-  vols = {"ts": vol_ts, "polys": vol_polys}
-  num_strikes = 10
+def make_grid(today,sim_dates,num_strikes,vols):
   answer = []
-  answer.append({"log_strikes": [0.0], "local_vols": [vol_polys[0](0.5)]})
-
-  sim_days = [(x-mkt.mktdata.pricing_date).days for x in sim_dates]
+  answer.append({"log_strikes": [0.0], "local_vols": [vols["polys"][0](0.5)]})
+  sim_days = [(x-today).days for x in sim_dates]
   little_sim_days = make_little_sim_days(sim_days)
   last_sim_day = 0
   for sim_day in little_sim_days:
-    print sim_day
     time = float(sim_day)/365
     dt = float(sim_day - last_sim_day) / 365
     last_sim_day = sim_day
@@ -88,9 +81,22 @@ def calib_local_vols(mkt,sim_dates):
     small_dt = dt/1
     for time2 in np.arange(time - dt + small_dt,time + small_dt - 1e-6,small_dt):   
       log_strikes = log_strike_range(num_strikes,time2,vols)
-      local_vols = np.array([local_vol_calc(x,time2,vols) for x in log_strikes])
       record = sim_day in sim_days and abs(time-time2)<1e-6
-      answer.append({"dt": small_dt, "log_strikes": log_strikes, "local_vols": local_vols, "record": record})
+      answer.append({"time": time2, "dt": small_dt, "log_strikes": log_strikes, "record": record})
+  return answer
+
+def calib_local_vols(mkt,sim_dates):
+  vol_series = WTI.vols()
+  vol_ts = [du.dt(mkt.mktdata.pricing_date,x) for x in vol_series.index]
+  vol_polys = vol_series.values
+  vols = {"ts": vol_ts, "polys": vol_polys}
+  num_strikes = 10
+
+  answer = make_grid(mkt.mktdata.pricing_date,sim_dates,num_strikes,vols)
+  for ei,elem in enumerate(answer):
+    if ei == 0: continue
+    print "calibrating time=",elem["time"]
+    elem["local_vols"] = np.array([local_vol_calc(x,elem["time"],vols) for x in elem["log_strikes"]])
   return answer
   
 def monte_carlo(local_vols_arr,num_paths):
@@ -105,13 +111,12 @@ def monte_carlo(local_vols_arr,num_paths):
 
     for path_num in range(0,num_paths):
       local_vol = np.interp(path_vals[path_num],log_strikes,local_vols)
-      local_vol_high = np.interp(path_vals[path_num]+eps,log_strikes,local_vols)
-      local_vol_deriv = (local_vol_high-local_vol)/eps
-
       inc_f = rands[path_num]*local_vol * math.sqrt(dt) - local_vol * local_vol * dt / 2.0
       # the log-milstein time-discretization correction
       # see: http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2175090
-      inc_f += 0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt
+      # local_vol_high = np.interp(path_vals[path_num]+eps,log_strikes,local_vols)
+      # local_vol_deriv = (local_vol_high-local_vol)/eps
+      # inc_f += 0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt
       path_vals[path_num] += inc_f
     if record: answer.append([math.exp(x) for x in path_vals])
   return answer
@@ -120,7 +125,7 @@ def main():
   pricer.cme.init()
   num_paths = 10000
 
-  opt = Option(WTI,"DEC16","put",30.0)
+  opt = Option(WTI,"DEC19","put",30.0)
   local_vols_arr = calib_local_vols(WTI,[opt.expiration_date()])
 
   # for dt,val in WTI.vols().iteritems(): print du.dt(WTI.mktdata.pricing_date,dt),"|",val(0.5)
