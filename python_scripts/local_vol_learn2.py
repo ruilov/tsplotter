@@ -20,15 +20,15 @@ def cp(strike,t):
 def pp(strike,t):
   return cp(strike,t) - (1.0 - strike)
 
-num_paths = 10000
+num_paths = 100000
 num_strikes = 10
 eps = 1e-3
-dt = 0.2
+dt = 0.1
 high_t = 1.0
 
 for seed in range(1,100):
   random.seed(seed)
-  path_vals = [0.0] * num_paths
+  path_vals = [1.0] * num_paths
 
   for t in np.arange(dt,high_t+1e-6,dt):
     # calc the strike range
@@ -69,14 +69,22 @@ for seed in range(1,100):
     rands = rands + [-x for x in rands]
 
     for path_num,path_val in enumerate(path_vals):
-      local_vol = np.interp(path_val,log_strikes,local_vols)
-      path_vals[path_num] += rands[path_num] * local_vol * math.sqrt(dt) - local_vol * local_vol * dt / 2
+      local_vol = np.interp(math.log(path_val),log_strikes,local_vols)
 
-      local_vol_high = np.interp(path_val + eps,log_strikes,local_vols)
-      local_vol_deriv = (local_vol_high-local_vol)/eps
-      path_vals[path_num] += 0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt
+      w = rands[path_num] * math.sqrt(dt)
+      v = local_vol
 
-  path_vals = map(math.exp,path_vals)
+      # path_vals[path_num] *= math.exp(v * w - v * v * dt / 2)
+
+      # local_vol_high = np.interp(math.log(path_val + eps),log_strikes,local_vols)
+      # local_vol_deriv = (local_vol_high-local_vol)/eps
+      # path_vals[path_num] *= math.exp(0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt)
+
+      path_vals[path_num] *= 1 + v*w #+ 0.5*v*v*(w*w-dt)
+
+  # path_vals = map(math.exp,path_vals)
   strike = 0.8
+  mean = np.mean(path_vals)
+  std = np.std(path_vals)
   pays = [max(strike-x,0) for x in path_vals]
-  print pp(strike,high_t),"|",np.mean(pays)
+  print pp(strike,high_t),"|",np.mean(pays),"|",mean,"|",std
