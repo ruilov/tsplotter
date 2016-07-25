@@ -69,7 +69,7 @@ def make_little_sim_days(sim_days,max_days=3):
 
 def make_grid(today,sim_dates,num_strikes,vols):
   answer = []
-  answer.append({"log_strikes": [0.0], "local_vols": [vols["polys"][0](0.5)]})
+  answer.append({"strikes": [1.0], "local_vols": [vols["polys"][0](0.5)]})
   sim_days = [(x-today).days for x in sim_dates]
   little_sim_days = make_little_sim_days(sim_days)
   last_sim_day = 0
@@ -82,7 +82,7 @@ def make_grid(today,sim_dates,num_strikes,vols):
     for time2 in np.arange(time - dt + small_dt,time + small_dt - 1e-6,small_dt):   
       log_strikes = log_strike_range(num_strikes,time2,vols)
       record = sim_day in sim_days and abs(time-time2)<1e-6
-      answer.append({"time": time2, "dt": small_dt, "log_strikes": log_strikes, "record": record})
+      answer.append({"time": time2, "dt": small_dt, "strikes": map(math.exp,log_strikes), "record": record})
   return answer
 
 def calib_local_vols(mkt,sim_dates):
@@ -95,37 +95,31 @@ def calib_local_vols(mkt,sim_dates):
   answer = make_grid(mkt.mktdata.pricing_date,sim_dates,num_strikes,vols)
   for ei,elem in enumerate(answer):
     if ei == 0: continue
-    print "calibrating time=",elem["time"]
-    elem["local_vols"] = np.array([local_vol_calc(x,elem["time"],vols) for x in elem["log_strikes"]])
+    # print "calibrating time=",elem["time"]
+    elem["local_vols"] = np.array([local_vol_calc(math.log(x),elem["time"],vols) for x in elem["strikes"]])
   return answer
   
 def monte_carlo(local_vols_arr,num_paths):
   eps = 1e-4
-  path_vals = [0.0] * num_paths # paths are in log space
+  path_vals = [1.0] * num_paths # paths are in log space
   answer = []
   for ei,elem in enumerate(local_vols_arr):
     if ei == 0: continue
-    [dt,log_strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei-1]["log_strikes"],local_vols_arr[ei-1]["local_vols"],elem["record"]]
+    [dt,strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei-1]["strikes"],local_vols_arr[ei-1]["local_vols"],elem["record"]]
     rands = [random.gauss(0,1) for x in range(0,num_paths/2)]
     rands = rands + [-x for x in rands]
-
     for path_num in range(0,num_paths):
-      local_vol = np.interp(path_vals[path_num],log_strikes,local_vols)
-      inc_f = rands[path_num]*local_vol * math.sqrt(dt) - local_vol * local_vol * dt / 2.0
-      # the log-milstein time-discretization correction
-      # see: http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2175090
-      # local_vol_high = np.interp(path_vals[path_num]+eps,log_strikes,local_vols)
-      # local_vol_deriv = (local_vol_high-local_vol)/eps
-      # inc_f += 0.5 * local_vol * local_vol_deriv * (rands[path_num]*rands[path_num]-1)*dt
-      path_vals[path_num] += inc_f
-    if record: answer.append([math.exp(x) for x in path_vals])
+      local_vol = np.interp(path_vals[path_num],strikes,local_vols)
+      path_vals[path_num] *= 1 + rands[path_num] * math.sqrt(dt) * local_vol
+      # path_vals[path_num] *= math.exp(rands[path_num] * local_vol * math.sqrt(dt) - local_vol*local_vol*dt/2)
+    if record: answer.append(list(path_vals))
   return answer
     
 def main():
   pricer.cme.init()
   num_paths = 10000
 
-  opt = Option(WTI,"DEC19","put",30.0)
+  opt = Option(WTI,"DEC16","put",30.0)
   local_vols_arr = calib_local_vols(WTI,[opt.expiration_date()])
 
   # for dt,val in WTI.vols().iteritems(): print du.dt(WTI.mktdata.pricing_date,dt),"|",val(0.5)
