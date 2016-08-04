@@ -63,7 +63,7 @@ class Market:
     raise Exception(str(month) + " not in futures strip of " + self.name)
 
   def vol(self,month,QD):
-    month_dt = dateutils.parse_month(month)
+    month_dt = self.option_expiration(month)
     vols = self.vols()
     dt_prev = min(vols.index,key = lambda x: (month_dt - x).days if x<=month_dt else 1e8+(x-month_dt).days)
     dt_next = min(vols.index,key = lambda x: (x - month_dt).days if x>=month_dt else 1e8+(month_dt-x).days)    
@@ -98,7 +98,7 @@ class OptionPriceCoord(Coord):
     self.option_type = option_type.lower()
     self.strike = strike
 
-  def reference_date(self): return dateutils.parse_month(self.month)
+  def reference_date(self): return self.market.option_expiration(self.month)
 
   def __str__(self): return self.type + " coord: " + "-".join([str(self.market), self.month, self.option_type, str(self.strike)])
 
@@ -107,7 +107,7 @@ class VolsCoord(Coord):
     Coord.__init__(self,market,"vols")
     self.month = month
 
-  def reference_date(self): return dateutils.parse_month(self.month)
+  def reference_date(self): return self.market.option_expiration(self.month)
 
   def __str__(self): return self.type + " coord: " + str(self.market) + "-" + self.month
 

@@ -81,8 +81,8 @@ def calibrate_term_vols(mkt):
     # each elem in vols has a strike and an implied vol
     vols = []
     for [opts,callput] in [[calls,"call"],[puts,"put"]]:
-      if month in opts:
-        for K,P in opts[month].iteritems():
+      if opt_exp in opts:
+        for K,P in opts[opt_exp].iteritems():
           intrinsic = quant.intrinsic(callput,S,K,df)
           if intrinsic > S*0.02: continue # too much IR dependency, and the CME seems to be bad at handling rates, better to look at otm options
           if abs(P-0.01) < 1e-10: continue # the CME seems to use 0.01 for options which have zero model value, ie very otm
