@@ -8,23 +8,33 @@ function quandl_button_cb() {
 function copy_link_button_cb() {
   var permalink = thePage.make_permalink();
 
-  var chart = HTML.chart_elem();
-  chart.style.visibility = "hidden";
+  $.ajax({
+    type: "POST",
+    url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDgUdSlS5QwAUMW8OtQ5mkJmOShSdPeF1A",
+    contentType: "application/json",
+    data: JSON.stringify({"longUrl": permalink}),
+    success: function(data) {
+      var shortUrl = data["id"];
 
-  // show, select, copy
-  var perma = HTML.perma_link_elem();
-  perma.style.visibility = "visible";
-  perma.innerHTML = permalink;
-  var range = document.createRange();
-  range.selectNode(perma);
+      var chart = HTML.chart_elem();
+      chart.style.visibility = "hidden";
 
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-  document.execCommand('copy');
+      // show, select, copy
+      var perma = HTML.perma_link_elem();
+      perma.style.visibility = "visible";
+      perma.innerHTML = shortUrl;
+      var range = document.createRange();
+      range.selectNode(perma);
 
-  // put it back
-  chart.style.visibility = "visible";
-  perma.style.visibility = "hidden";
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand('copy');
+
+      // put it back
+      chart.style.visibility = "visible";
+      perma.style.visibility = "hidden";    
+    },
+  });
 }
 
 function search_button_cb() {
