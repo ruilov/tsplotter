@@ -1,8 +1,8 @@
 import os,webbrowser,json,platform,collections,pandas
 import datetime
-import tsplotter.websocket_server
+import websocket_server
 from lib.myseries import MySeries
-from tsplotter.websocket_server import WebsocketServer
+from websocket_server import WebsocketServer
 
 class Plotter:
   isOpen = False
