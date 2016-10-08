@@ -37,9 +37,10 @@ class Page {
   }
 
   f9_cb() {
-    HTML.show_chart();
     HTML.hide_key_warning();
-
+    HTML.hide_perma_link();
+    HTML.show_chart();
+    
     if(this.quandl_key === "") {
       HTML.show_key_warning();
       return;

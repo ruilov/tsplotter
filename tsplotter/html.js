@@ -89,4 +89,15 @@ class HTML {
     var elem = document.getElementById("key_warning");
     elem.style.visibility = "hidden";
   }
+
+  static show_perma_link(permalink) {
+    var elem = HTML.perma_link_elem();
+    elem.innerHTML = permalink;
+    elem.style.visibility = "visible";
+  }
+
+  static hide_perma_link(permalink) {
+    var elem = HTML.perma_link_elem();
+    elem.style.visibility = "hidden";
+  }
 }

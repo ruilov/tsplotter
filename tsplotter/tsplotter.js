@@ -5,26 +5,21 @@ function quandl_button_cb() {
   }
 }
 
-function copy_link_button_cb() {
+function show_link_button_cb() {
   var permalink = thePage.make_permalink();
 
-  var chart = HTML.chart_elem();
-  chart.style.visibility = "hidden";
-
-  // show, select, copy
-  var perma = HTML.perma_link_elem();
-  perma.style.visibility = "visible";
-  perma.innerHTML = permalink;
-  var range = document.createRange();
-  range.selectNode(perma);
-
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
-  document.execCommand('copy');
-
-  // put it back
-  chart.style.visibility = "visible";
-  perma.style.visibility = "hidden";
+  $.ajax({
+    type: "POST",
+    url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDgUdSlS5QwAUMW8OtQ5mkJmOShSdPeF1A",
+    contentType: "application/json",
+    data: JSON.stringify({"longUrl": permalink}),
+    success: function(data) {
+      // we can't copy the url to the clipboard from here because we can only do that from a trusted user action
+      // but since the url is short now, it's ok to just display it
+      var shortUrl = data["id"];
+      HTML.show_perma_link(shortUrl);
+    },
+  });
 }
 
 function search_button_cb() {

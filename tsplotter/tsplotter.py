@@ -10,7 +10,7 @@ class Plotter:
   def __init__(self):
     if Plotter.isOpen: raise Exception("can only open one plotter at a time. Close other open plotters first.")
 
-    websocket_server.VERBOSE = False
+    tsplotter.websocket_server.VERBOSE = False
     self.server = WebsocketServer(9002)
     self.server.set_fn_new_client(lambda client,server: self.new_client(client,server))
     
@@ -28,8 +28,8 @@ class Plotter:
       self.chrome_path = '/usr/bin/google-chrome %s'
     elif system == "darwin":
       self.chrome_path = 'open -a /Applications/Google\ Chrome.app %s' # MacOS
-    elif system == "win32":
-      self.chrome_path = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s'
+    elif system == "win32" or system == "windows":
+      self.chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
   def show(self):
     Plotter.isOpen = True

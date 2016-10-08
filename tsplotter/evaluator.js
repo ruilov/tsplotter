@@ -167,7 +167,6 @@ class Evaluator {
       this.scope[s] = this.additional_scope[s];
 
     var formulas = this.formula_area.parsed_formulas;
-
     for (var fi = 0; fi < formulas.length; fi++) {
       if (formulas[fi].off) continue;
 
@@ -337,7 +336,6 @@ class Evaluator {
     var tt = this;
     return function(retVal) {
       var dataset = retVal.dataset;
-
       var col_names = dataset.column_names.map(x => x.toLowerCase());
       var dateIdx = col_names.indexOf("date");
       if (dateIdx < 0) {
@@ -348,8 +346,10 @@ class Evaluator {
       }
 
       // parse the dates
-      dataset.start = parseDate(dataset.start_date);
-      dataset.end = parseDate(dataset.end_date);
+      // if the dates don't go as far as what we're asking for, use instead the dates that we asked for
+      // so that the eval function knows that this dataset is now cached
+      dataset.start = Math.min(parseDate(dataset.start_date),tt.start);
+      dataset.end = Math.max(parseDate(dataset.end_date),tt.end);
 
       if (symbol in tt.cached_datasets) {
         tt.cached_datasets[symbol].start = Math.min(tt.cached_datasets[symbol].start, dataset.start);
@@ -370,7 +370,6 @@ class Evaluator {
           tt.cached_datasets[symbol].data2[colName].put(dt, val);
         }
       }
-
       tt.eval_fn();
     };
   }
