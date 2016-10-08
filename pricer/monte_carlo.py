@@ -58,85 +58,119 @@ def local_vol_calc(log_strike,time,vols):
   local_vol = math.sqrt(local_var)
   return local_vol
 
+def insert_if_not_in(a,x):
+  idx = bisect.bisect_left(a,x)
+  if a[idx] != x: 
+    a.insert(idx,x)
+
 # these are the days we'll actually simulate. The argument sim_days are the days the user wants to observe
 # note that 'days' refers to the number of days from today to that date
-def make_little_sim_days(sim_days,max_days=1):
+def make_little_sim_days(sim_days,vol_days,max_days=5):
   little_sim_days = list(range(max_days,sim_days[-1]+max_days,max_days))
+  
   for day in sim_days:
-    idx = bisect.bisect_left(little_sim_days,day)
-    if little_sim_days[idx] != day: little_sim_days.insert(idx,day)
+    insert_if_not_in(little_sim_days,day)
+
+  for day in vol_days:
+    if day > sim_days[-1]: break
+    insert_if_not_in(little_sim_days,day)
+
   return little_sim_days
 
 def make_grid(today,sim_dates,num_strikes,vols):
   answer = []
-  answer.append({"strikes": [1.0], "local_vols": [vols["polys"][0](0.5)]})
+  answer.append({"strikes": np.array([1.0]), "local_vols": np.array([vols["polys"][0](0.5)])})
   sim_days = [(x-today).days for x in sim_dates]
-  little_sim_days = make_little_sim_days(sim_days)
+  little_sim_days = make_little_sim_days(sim_days,vols["days"])
   last_sim_day = 0
   for sim_day in little_sim_days:
     time = float(sim_day)/365
     dt = float(sim_day - last_sim_day) / 365
     last_sim_day = sim_day
 
-    small_dt = dt/1
-    for time2 in np.arange(time - dt + small_dt,time + small_dt - 1e-6,small_dt):   
-      log_strikes = log_strike_range(num_strikes,time2,vols)
-      record = sim_day in sim_days and abs(time-time2)<1e-6
-      answer.append({"time": time2, "dt": small_dt, "strikes": map(math.exp,log_strikes), "record": record})
+    log_strikes = log_strike_range(num_strikes,time,vols)
+    strikes = np.array(list(map(math.exp,log_strikes)))
+    record = sim_day in sim_days 
+    answer.append({"time": time, "dt": dt, "strikes": strikes, "record": record})
   return answer
 
 def calib_local_vols(mkt,sim_dates):
   vol_series = WTI.vols()
   vol_ts = [du.dt(mkt.mktdata.pricing_date,x) for x in vol_series.index]
+  vol_days = [(x - mkt.mktdata.pricing_date).days for x in vol_series.index]
   vol_polys = vol_series.values
-  vols = {"ts": vol_ts, "polys": vol_polys}
+  vols = {"ts": vol_ts, "polys": vol_polys, "days": vol_days}
   num_strikes = 10
 
   answer = make_grid(mkt.mktdata.pricing_date,sim_dates,num_strikes,vols)
   for ei,elem in enumerate(answer):
     if ei == 0: continue
-    print "calibrating time=",elem["time"]
+    print("calibrating time=",elem["time"])
     elem["local_vols"] = np.array([local_vol_calc(math.log(x),elem["time"],vols) for x in elem["strikes"]])
   return answer
   
-def monte_carlo(local_vols_arr,num_paths):
+def monte_carlo_local_vols(local_vols_arr,num_paths):
+  assert num_paths%2 == 0  # we use antithetic paths
   eps = 1e-4
   path_vals = [1.0] * num_paths # paths are in log space
   answer = []
   for ei,elem in enumerate(local_vols_arr):
     if ei == 0: continue
     [dt,strikes,local_vols,record] = [elem["dt"],local_vols_arr[ei-1]["strikes"],local_vols_arr[ei-1]["local_vols"],elem["record"]]
-    rands = [random.gauss(0,1) for x in range(0,num_paths/2)]
+    rands = [random.gauss(0,1) for x in range(0,int(num_paths/2))]
     rands = rands + [-x for x in rands]
     for path_num in range(0,num_paths):
       local_vol = np.interp(path_vals[path_num],strikes,local_vols)
       path_vals[path_num] *= 1 + rands[path_num] * math.sqrt(dt) * local_vol
       # path_vals[path_num] *= math.exp(rands[path_num] * local_vol * math.sqrt(dt) - local_vol*local_vol*dt/2)
-    if record: answer.append(list(path_vals))
-  return answer
+    if record: answer.append(np.array(list(path_vals)))
+  return np.array(answer)
     
-def main():
-  pricer.cme.init()
-  num_paths = 100000
+def month_carlo(mkt,num_paths,end_month,seed=1):
+  random.seed(seed)
+  today = mkt.mktdata.pricing_date
+  months = list()
+  end_months = [du.month_end_date(x) for x in du.month_generator(du.date_to_month(today),end_month)]
+  opt_exps = [mkt.option_expiration(x) for x in du.month_generator(mkt.first_option(),end_month)]
+  sim_dates = end_months + opt_exps
+  sim_dates.sort()
+  sim_dates = np.unique(sim_dates)
+  if sim_dates[0]==today: sim_dates = sim_dates[1:]
 
-  opt = Option(WTI,"SEP16","put",30.0)
+  local_vols_arr = calib_local_vols(mkt,sim_dates)
+  paths = monte_carlo_local_vols(local_vols_arr,num_paths)
+  return [sim_dates,paths]
+  
+def test():
+  pricer.cme.init()
+  num_paths = 10000
+
+  opt = Option(WTI,"DEC16","put",30.0)
   local_vols_arr = calib_local_vols(WTI,[opt.expiration_date()])
 
-  # for dt,val in WTI.vols().iteritems(): print du.dt(WTI.mktdata.pricing_date,dt),"|",val(0.5)
-  
   t1 = time.time()
   for seed in range(1,20):
     random.seed(seed)
-    paths = monte_carlo(local_vols_arr,num_paths)
+    paths = monte_carlo_local_vols(local_vols_arr,num_paths)
     pays = [max(opt.strike - x * opt.underlying_price(),0) for x in paths[0]]
     t2 = time.time()
     runt = (t2-t1)
     t1 = t2
-    print opt.price()/opt.discount_factor(),"|",np.mean(pays),"|",runt
+    print(opt.price()/opt.discount_factor(),"|",np.mean(pays),"|",runt)  
 
-main()
+def filename(mkt,date):
+  return "cached/mc_" + str(mkt) + "_" + str(date).replace("-","")
 
-# cProfile.run('main()',"stats")
-# import pstats
-# p = pstats.Stats("stats")
-# p.strip_dirs().sort_stats("cumtime").print_stats()
+def save_paths():
+  pricer.cme.init()
+  mkt = WTI
+  num_paths = 10000
+  [sim_dates,paths] = month_carlo(mkt,num_paths,"DEC26")
+  fn = filename(mkt,mkt.mktdata.pricing_date)
+  np.savez_compressed(fn,sim_dates,paths)
+
+def load_paths(mkt,date):
+  fn = filename(mkt,date)
+  contents = np.load(fn + ".npz")
+  [sim_dates,paths] = [contents["arr_0"],contents["arr_1"]]
+  return {"dates": sim_dates, "values": paths}
