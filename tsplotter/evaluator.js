@@ -13,7 +13,7 @@ class Evaluator {
       "FRED": "VALUE",
       "BOE": "Value",
       "MOODY": "VALUE",
-      "STOCK": "close"
+      "STOCK": "adjusted close"
     };
   }
 
@@ -308,7 +308,7 @@ class Evaluator {
 
   alphaadv_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
-    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker + "&outputsize=full&apikey=WI0Y0BUXESQK8GVT";
+    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=WI0Y0BUXESQK8GVT";
   }
 
   evaluate(plot_cb, error_cb) {
