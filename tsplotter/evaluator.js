@@ -13,6 +13,7 @@ class Evaluator {
       "FRED": "VALUE",
       "BOE": "Value",
       "MOODY": "VALUE",
+      "STOCK": "close"
     };
   }
 
@@ -161,6 +162,7 @@ class Evaluator {
 
   eval_fn() {
     if (!this.all_deps_cached()) return;
+    HTML.cursor_style("default");
 
     this.scope = {};
     for (var s in this.additional_scope)
@@ -304,6 +306,11 @@ class Evaluator {
     return url;
   }
 
+  alphaadv_url(symbol) {
+    var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
+    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker + "&outputsize=full&apikey=WI0Y0BUXESQK8GVT";
+  }
+
   evaluate(plot_cb, error_cb) {
     this.error_messages = [];
     this.plot_cb = plot_cb;
@@ -323,13 +330,65 @@ class Evaluator {
     for (var symbol of symbols) {
       if (this.is_symbol_cached(symbol)) continue;
 
-      var url = this.quandl_url(symbol);
-      if (!url) return; // means we couldn't parse the symbol
-      console.log("calling: " + url);
-      $.getJSON(url, this.quandl_success_cb(symbol)).error(this.quandl_error_cb(symbol));
+      if(symbol.startsWith("STOCK|")) {
+        // this uses a special service
+        var url = this.alphaadv_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      } else {
+        var url = this.quandl_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.quandl_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      }
     }
+    HTML.cursor_style("progress");
 
     this.eval_fn(); // in case there were not json calls
+  }
+
+  alphaadv_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      if("Error Message" in retVal) {
+        console.log(retVal);
+        tt.error_messages.push(symbol + ": " + retVal["Error Message"]);
+        tt.error_fn();
+        return;
+      }
+
+      var dataset = retVal["Time Series (Daily)"];
+      var col_names = Object.keys(Object.values(dataset)[0]).map(x => x.split(".")[1].trim())
+
+      tt.cached_datasets[symbol] = dataset;
+      tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot
+      tt.cached_datasets[symbol].start = new Date(-8640000000000000);
+      tt.cached_datasets[symbol].end = new Date(8640000000000000);
+
+      tt.cached_datasets[symbol].data2 = {};
+      for(var cn of col_names)
+        tt.cached_datasets[symbol].data2[cn] = new Series();
+
+      var count = 0;
+      for(var dateStr in dataset) {
+        count += 1;
+        if(dateStr=="data2" || dateStr=="start" || dateStr=="end" || dateStr=="name") continue;
+
+        for(var rawCol in dataset[dateStr]) {
+          var val = parseFloat(dataset[dateStr][rawCol]);
+          var colName = rawCol.split(".")[1].trim();
+
+          // this is a performance optimization. For some reason Series.put is slow!
+          if(count==1)
+            tt.cached_datasets[symbol].data2[colName].put(dateStr,val);
+          else
+            tt.cached_datasets[symbol].data2[colName].map[dateStr] = val;
+        }
+      }
+
+      tt.eval_fn();
+    };
   }
 
   quandl_success_cb(symbol) {
@@ -374,7 +433,7 @@ class Evaluator {
     };
   }
 
-  quandl_error_cb(symbol) {
+  data_source_error_cb(symbol) {
     var tt = this;
     return function(jqXHR) {
       tt.error_messages.push(symbol + ": " + jqXHR.responseText);
