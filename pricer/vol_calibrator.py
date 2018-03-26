@@ -1,8 +1,7 @@
-import pricer.quant as quant,numpy as np,math,lib.dateutils as du,pricer.gabillon
+import pricer.quant as quant,numpy as np,math,lib.dateutils as du,pricer.gabillon as gabillon
 from heapq import nsmallest
 from pricer.markets import *
 from lib.myseries import MySeries
-from tsplotter.tsplotter import Plotter
 
 # this calibration is good enough to calibrate WTI
 # however for NG because apr vol << mar vol, it fails due to negative fwd var
@@ -12,6 +11,12 @@ def calibrate_vols():
   calibrate_term_vols(WTI)
   calibrate_term_vols(NG)
   calibrate_term_vols(RB)
+
+def calibrate_gnf(mkt):
+  calibrate_long_vol(mkt)
+  calibrate_long_short_corr(mkt)
+  calibrate_beta(mkt)
+  calibrate_local_vols(mkt)
 
 def calibrate_long_vol(mkt):
   last_vol = mkt.vols()[-1](0.5) * .8 # if the long vol is too high, we fail to calibrate
@@ -49,18 +54,16 @@ def calibrate_local_vols(mkt):
     local_vols[opt_exp] = local_vol
     term_vols[opt_exp] = term_vol
 
+    mkt.mktdata.addCoord(LocalVolCoord(mkt,month),local_vol)
+
     # sanity check it
-    # term_vol_check = gabillon.term_vol(local_vols,opt_exp,mkt.mktdata.pricing_date,mkt.long_vol(),mkt.beta(),mkt.long_short_corr())
-    # assert abs(term_vol_check-term_vol)<1e-14
-    # print month,"|",T,"|",total_local_vol,"|",local_vol,"|",term_vol_check
+    term_vol_check = gabillon.term_vol(local_vols,opt_exp,mkt.mktdata.pricing_date,mkt.long_vol(),mkt.beta(),mkt.long_short_corr())
+    # if month == "DEC17": print(local_vols)
+    assert abs(term_vol_check-term_vol)<1e-14
+    # print(du.month_end_date(month),"|",T,"|",total_local_vol,"|",local_vol,"|",term_vol_check)
 
     prev_var = total_local_var
     prev_T = T
-    
-  plotter = Plotter()
-  plotter.plot("local_" + str(mkt),local_vols)
-  plotter.plot("term_" + str(mkt),term_vols)
-  plotter.show()
 
 def calibrate_term_vols(mkt):
   ff = FF.rates()
@@ -75,6 +78,8 @@ def calibrate_term_vols(mkt):
   for month,S in futures.itermonths():
     opt_exp = mkt.option_expiration(month)
     T = du.dt(mkt.mktdata.pricing_date,opt_exp)
+    if T==0: continue
+
     r = ff.interp(opt_exp)
     df = math.exp(-r*T)
 
@@ -86,6 +91,7 @@ def calibrate_term_vols(mkt):
           intrinsic = quant.intrinsic(callput,S,K,df)
           if intrinsic > S*0.02: continue # too much IR dependency, and the CME seems to be bad at handling rates, better to look at otm options
           if abs(P-0.01) < 1e-10: continue # the CME seems to use 0.01 for options which have zero model value, ie very otm
+          if abs(P-0.0001) < 1e-10: continue # the CME seems to use 0.01 for options which have zero model value, ie very otm
           # if K / S > 3.0 or K / S < 0.33: continue # too otm 
 
           # print(month,P,callput,S,K,T,r,quant.blackScholes_price(callput,S,K,T,1e-20,r),quant.blackScholes_price(callput,S,K,T,6,r))

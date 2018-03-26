@@ -83,7 +83,7 @@ for seed in range(1,100):
       path_vals[path_num] *= 1 + v*w #+ 0.5*v*v*(w*w-dt)
 
   # path_vals = map(math.exp,path_vals)
-  strike = 0.8
+  strike = 0.6
   mean = np.mean(path_vals)
   std = np.std(path_vals)
   pays = [max(strike-x,0) for x in path_vals]

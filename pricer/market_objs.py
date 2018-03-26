@@ -25,7 +25,7 @@ class Market:
 
   def generic_nearby(self, expiration_func, dt=None):
     if not dt: dt = self.mktdata.pricing_date
-    month = "JAN16"
+    month = dateutils.date_to_month(dt)
     while expiration_func(month) < dt:
       month = dateutils.date_to_month(dateutils.add_months(dateutils.parse_month(month),1))
     return month
@@ -41,6 +41,9 @@ class Market:
 
   def vols(self):
     return self.mktdata.coords["vols"][self]
+
+  def local_vols(self):
+    return self.mktdata.coords["local vol"][self]
 
   def long_vol(self):
     return self.mktdata.coords["long vol"][self][0]
@@ -116,7 +119,8 @@ class LocalVolCoord(Coord):
     Coord.__init__(self,market,"local vol")
     self.month = month
 
-  def reference_date(self): return dateutils.parse_month(self.month)
+  # using option expiration below to make sure that the integral of local vols comes out exactly right
+  def reference_date(self): return self.market.option_expiration(self.month)
 
   def __str__(self): return self.type + " coord: " + str(self.market) + "-" + self.month
 
