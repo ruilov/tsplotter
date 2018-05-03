@@ -42,6 +42,8 @@ function init() {
   thePage.init();
 }
 
+console.log("started execution");
+
 // EXECUTION STARTS HERE
 $(document).ready(function() {
   thePage = new Page();
