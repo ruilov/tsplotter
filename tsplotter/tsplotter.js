@@ -46,6 +46,7 @@ console.log("started execution");
 
 // EXECUTION STARTS HERE
 $(document).ready(function() {
+  console.log("document is ready");
   thePage = new Page();
   HTML.init();
   google.charts.load('current', {'packages': ['charteditor'], 'callback': init});
