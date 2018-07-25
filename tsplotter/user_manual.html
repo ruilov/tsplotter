@@ -114,6 +114,10 @@
 
         <li><code>avg(series,window=number|optional)</code>: average of the last 'window' points of the series (looking back), or cummulative if no window provided.</li>
 
+        <li><code>yearlyAvg(series)</code>: returns a series with the same dates and the values replaced with the averages of each calendar year.</li>
+
+        <li><code>monthlyAvg(series)</code>: returns a series with the same dates and the values replaced with the averages of each calendar month.</li>
+
         <li><code>cum(series,window=number|optional)</code>: sum of the last 'window' points of the series (looking back), or cummulative if no window provided.</li>
 
         <li><code>d(series,window=number|optional)</code>: difference between first and last points in a window (looking back). window default = 1. Equivalent to series - lag(series,window).</li>
@@ -131,6 +135,8 @@
         <li><code>if(condition,series1 or number1,series2 or number2)</code>: condition is a series that can be defined by comparing two other series (or numbers) with the symbols == (equals), < or >. For each date that appears in all series, when the conditional is true take the value of series1, otherwise take the value of series2.</li>
 
         <li><code>zap(condition,series)</code>: throw away values of series for which the condition is true.</li>
+
+        <li><code>keep(condition,series)</code>: keeps values of series for which the condition is true.</li>
 
         <li><code>union(series1,series2)</code>: joins the two series, keeping the value of series1 where they intersect.</li>
 

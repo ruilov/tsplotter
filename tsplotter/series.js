@@ -481,6 +481,39 @@ var infFunc = math.typed('inf', {
   },
 });
 
+
+// dateFunc converts the date into categories
+// this function returns a new series where the dates are the same as in series
+// the values are averaged within each category
+function dateBasedAvg(series,dateFunc) {
+    var values = {};
+    for(var dt in series.map) {
+      var cat = dateFunc(dt);
+      if(!(cat in values)) values[cat] = [];
+      values[cat].push(series.map[dt])
+    };
+
+    var avgs = {};
+    for(var cat in values)
+      avgs[cat] = values[cat].average();
+
+    var ans = {};
+    for(var dt in series.map) ans[dt] = avgs[dateFunc(dt)];
+    return make_series(ans);
+}
+
+var yearlyAvgFunc = math.typed('yearlyAvg', {
+  'Series': function (s) {
+    return dateBasedAvg(s,function(dt) {return dt.split('-')[0];});
+  },
+});
+
+var monthlyAvgFunc = math.typed('monthlyAvg', {
+  'Series': function (s) {
+    return dateBasedAvg(s,function(dt) {var sp = dt.split("-"); return sp[0]+"-"+sp[1];});
+  },
+});
+
 // WINDOW FUNCTIONS
 
 function funcOnGenerator(generator,calcFunc,toStr_func) {
@@ -822,6 +855,18 @@ var zapFunc = math.typed('zap',{
   },
 });
 
+var keepFunc = math.typed('keep',{
+  'Series, Series': function(s1,s2) {
+    var ans = {};
+    for(var x in s1.map) {
+      if(x in s2.map && s1.map[x]) { 
+        ans[x] = s2.map[x];
+      }
+    }
+    return make_series(ans);
+  },
+});
+
 var unionFunc = math.typed('union',{
   '...Series': function(sarr) {
     var ans = {};
@@ -949,6 +994,7 @@ var to_import = {
   smaller: smallerFunc,
   if: condFunc,
   zap: zapFunc,
+  keep: keepFunc,
   union: unionFunc,
   exp: expFunc,
   dx: dxFunc,
@@ -956,6 +1002,9 @@ var to_import = {
   beta: betaFunc,
   trend: trendFunc,
   daily: daily,
+
+  yearlyAvg: yearlyAvgFunc,
+  monthlyAvg: monthlyAvgFunc,
 };
 
 // this allows every function to be called with a number as a first argument, and the number is converted to a series
