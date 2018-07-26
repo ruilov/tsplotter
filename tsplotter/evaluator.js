@@ -358,6 +358,15 @@ class Evaluator {
         return;
       }
 
+      if(!("Time Series (Daily)" in retVal)) {
+        var errMsg = "The alpha Vantage stock database (https://www.alphavantage.co) returned an error.";
+        if("Information" in retVal) errMsg += "<br>" + retVal["Information"]+"<br>";
+        console.log(retVal);
+        tt.error_messages.push(symbol + ": " + errMsg);
+        tt.error_fn();
+        return;
+      }
+
       var dataset = retVal["Time Series (Daily)"];
       var col_names = Object.keys(Object.values(dataset)[0]).map(x => x.split(".")[1].trim())
 
