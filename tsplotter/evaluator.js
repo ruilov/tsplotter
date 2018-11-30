@@ -77,7 +77,9 @@ class Evaluator {
       formula = formula.replace(String.fromCharCode(160), "");
       if (formula.length === 0) continue;
 
-      var parsed_formula = math.parse(formula);
+      var translated_formula = this.formula_translate(formula)
+      formula2.text = translated_formula;
+      var parsed_formula = math.parse(translated_formula);
       var thisSymbols = this.symbol_nodes(parsed_formula);
       for (var symbol of thisSymbols)
         if (!(symbol in assignedSymbols)) symbols[symbol] = 1;
@@ -85,6 +87,74 @@ class Evaluator {
     }
     return Object.keys(symbols);
   }
+
+  formula_translate(formula) {
+    // First find the "strip"
+    var strip_end = -1;
+    var expr = /strip\(/;
+    var strip_location = 0;
+    var formula_new = " ";
+    var strip_start = 0;
+    
+    if ( strip_location = formula.match(expr) ) {
+      strip_start = strip_location.index;
+      var quotes = 0;
+      for ( r = strip_start; r < formula.length; r ++ ){
+        if ( formula[r] == ")" && strip_end == -1 )
+          strip_end = r+1;
+      }
+      var formula_extract = formula.substring( strip_start+6, strip_end-1 );
+
+      // Then extract the relevant portions
+      formula_new = String( formula_extract );
+      var space = " ";
+      var empty = "";
+      while( formula_new.indexOf( space ) > -1 ) {
+        formula_new = formula_new.replace( space, empty );
+      };
+
+      var Strip_inputs = Array( formula_new.split( "," ) );
+
+      var preface = String( Strip_inputs[0][0] );
+      var init_contract = String( Strip_inputs[0][1] );
+      var N = Strip_inputs[0][2];
+      //var Operator = String( Strip_inputs[0][3] );
+
+      var month_codes   = ["F","G","H","J","K","M","N","Q","U","V","X","Z"]
+      var symbol_month  = init_contract[0];
+      var symbol_year   = init_contract.substring(1,5);
+
+      for ( var n = 0; n < month_codes.length; n++ ){
+        if ( month_codes[n] == symbol_month ){
+          var month_location = n;
+        }
+      }
+
+      var symbols_string = "(" + preface + init_contract;
+
+      for (var r = 1; r < N; r++){
+        if ( month_location == 11 ){
+          month_location = 0;
+          symbol_year ++;
+        } else {
+          month_location ++;
+        }
+        // symbols[ symbols.length ] = preface + month_codes[ month_location] + symbol_year;
+        symbols_string += "+" + preface + month_codes[ month_location] + symbol_year;
+      };
+      symbols_string += ")/" + N;
+
+      var formula_final = formula;
+      var old_strip = formula.substring(strip_start, strip_end);
+      var new_strip = symbols_string;
+      while( formula_final.indexOf( old_strip ) > -1 ) {
+        formula_final = formula_final.replace( old_strip, new_strip );
+      };      
+    } else {
+      formula_final = formula;
+    }
+    return formula_final;
+  };
 
   symbol_nodes(parsed_formula) {
     return parsed_formula.filter(x => 
@@ -174,6 +244,8 @@ class Evaluator {
 
       var formulaText = formulas[fi].text.trim();
       formulaText = formulaText.replace(String.fromCharCode(160), "");
+      var translated_formulaText = this.formula_translate(formulaText)
+      formulaText = translated_formulaText.replace(String.fromCharCode(160), "");
       if (formulaText.length === 0) continue;
 
       // eval it
@@ -195,8 +267,10 @@ class Evaluator {
       formulas[fi].evaled = evaled;
       if (formulas[fi].color) formulas[fi].color = rgb2hex(formulas[fi].color);
       
+      var original_formulaText = formulas[fi].text.trim();
+      original_formulaText = original_formulaText.replace(String.fromCharCode(160), "");
       var title = formulas[fi].title;
-      if (!title) title = this.make_title(formulaText);
+            if (!title) title = this.make_title(formulaText,original_formulaText);
       formulas[fi].display_title = title;
     }
 
@@ -268,7 +342,7 @@ class Evaluator {
     }
   }
 
-  make_title(formula) {
+  make_title(formula,original) {
     var title = formula;
 
     var parsed = math.parse(formula);
@@ -289,6 +363,7 @@ class Evaluator {
 
     var idx = title.indexOf("Prices, Dividends, Splits and Trading Volume");
     if (idx >= 0) title = title.substr(0, idx - 1);
+    if (formula!=original) title = original;
     return title;
   }
 
