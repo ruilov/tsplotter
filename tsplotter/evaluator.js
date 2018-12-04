@@ -77,7 +77,9 @@ class Evaluator {
       formula = formula.replace(String.fromCharCode(160), "");
       if (formula.length === 0) continue;
 
-      var parsed_formula = math.parse(formula);
+      var translated_formula = this.translate_formula(formula)
+      formula2.text = translated_formula;
+      var parsed_formula = math.parse(translated_formula);
       var thisSymbols = this.symbol_nodes(parsed_formula);
       for (var symbol of thisSymbols)
         if (!(symbol in assignedSymbols)) symbols[symbol] = 1;
@@ -85,6 +87,106 @@ class Evaluator {
     }
     return Object.keys(symbols);
   }
+
+  translate_formula_stripavg(formula_inputs,formula_original,translate_start,translate_end) {
+    
+    // Taking a translation containing "stripavg( Preface, Initial Contract, Number of Contracts)"
+    // eg. stripavg(CME|CL,F2020,2)
+    // Return the combined formula averging over N consecutive contracts
+    // eg. (CME|CLF2020+CME|CLG2020)/2
+
+    var preface = String( formula_inputs[0] );
+    var init_contract = String( formula_inputs[1] );
+    var N = formula_inputs[2];
+
+    var month_codes   = ["F","G","H","J","K","M","N","Q","U","V","X","Z"]
+    var symbol_month  = init_contract[0];
+    var symbol_year   = init_contract.substring(1,5);
+
+    for ( var n = 0; n < month_codes.length; n++ ){
+      if ( month_codes[n] == symbol_month ){
+        var month_location = n;
+      }
+    }
+    var symbols_string = "(" + preface + init_contract;
+
+    for (var r = 1; r < N; r++){
+      if ( month_location == 11 ){
+        month_location = 0;
+        symbol_year ++;
+      } else {
+        month_location ++;
+      }
+      // symbols[ symbols.length ] = preface + month_codes[ month_location] + symbol_year;
+      symbols_string += "+" + preface + month_codes[ month_location] + symbol_year;
+    };
+    symbols_string += ")/" + N;
+
+    var formula_final = formula_original;
+    var old_strip = formula_original.substring( translate_start, translate_end );
+    var new_strip = symbols_string;
+    while( formula_final.indexOf( old_strip ) > -1 ) {
+      formula_final = formula_final.replace( old_strip, new_strip );
+    };      
+    return formula_final
+  }
+
+  translate_formula(formula) {
+  
+    // The syntax rules are:
+    // 1) One translation per brackets (one per input row currently)
+    // 2) Use "translate" with open and close brackts (eg. "translate[formula(1,2,3)]")
+  
+    // Determine if the formula needs a translation  
+    var expr = /translate\[/;
+    var translate_start = 0;
+    var translate_end = -1;
+    var translate_location = 0;
+    var formula_new = " ";
+      
+    if ( translate_location = formula.match(expr) ) {
+      translate_start = translate_location.index;
+      var quotes = 0;
+      for ( var r = translate_start; r < formula.length; r ++ ) {
+        if ( formula[r] == "]" && translate_end == -1 )
+          translate_end = r+1;
+      }
+      var formula_extract = formula.substring( translate_start + 10, translate_end );
+      
+      // Extract the translation method (eg. 'stripavg', 'strip', 'nearby', etc.)
+      var formula_start = 0;
+      var formula_end = -1;
+      for ( var r = formula_start; r < formula_extract.length; r ++ ) {
+        if( formula_extract[r] == "(" )
+          var formula_method = formula_extract.substring( 0 , r );
+        if ( formula_extract[r] == ")" && formula_end == -1 )
+          formula_end = r+1;
+      }
+      var subformula_extract = formula_extract.substring( formula_start + formula_method.length + 1, formula_end-1 );
+
+      // Parse the inputs using comma delimiter
+      var subformula_new = String( subformula_extract );
+      var space = " ";
+      var empty = "";
+      while( subformula_new.indexOf( space ) > -1 ) {
+        subformula_new = subformula_new.replace( space, empty );
+      };
+      var subformula_inputs = subformula_new.split( "," );
+
+      // Apply the appropriate translation for the given method
+      switch ( formula_method ) {
+        case "stripavg":
+          var formula_final = this.translate_formula_stripavg( subformula_inputs, formula, translate_start, translate_end );
+          break;
+        default:
+          throw( "Undefined translation formula" );
+      }
+    } else {
+      // If no translation was identified, pass along the original input formula
+      var formula_final = formula;
+    }
+    return formula_final;
+  };
 
   symbol_nodes(parsed_formula) {
     return parsed_formula.filter(x => 
@@ -174,6 +276,8 @@ class Evaluator {
 
       var formulaText = formulas[fi].text.trim();
       formulaText = formulaText.replace(String.fromCharCode(160), "");
+      var translated_formulaText = this.translate_formula(formulaText)
+      formulaText = translated_formulaText.replace(String.fromCharCode(160), "");
       if (formulaText.length === 0) continue;
 
       // eval it
@@ -195,8 +299,10 @@ class Evaluator {
       formulas[fi].evaled = evaled;
       if (formulas[fi].color) formulas[fi].color = rgb2hex(formulas[fi].color);
       
+      var original_formulaText = formulas[fi].text.trim();
+      original_formulaText = original_formulaText.replace(String.fromCharCode(160), "");
       var title = formulas[fi].title;
-      if (!title) title = this.make_title(formulaText);
+            if (!title) title = this.make_title(formulaText,original_formulaText);
       formulas[fi].display_title = title;
     }
 
@@ -268,7 +374,7 @@ class Evaluator {
     }
   }
 
-  make_title(formula) {
+  make_title(formula,original) {
     var title = formula;
 
     var parsed = math.parse(formula);
@@ -289,6 +395,7 @@ class Evaluator {
 
     var idx = title.indexOf("Prices, Dividends, Splits and Trading Volume");
     if (idx >= 0) title = title.substr(0, idx - 1);
+    if (formula!=original) title = original;
     return title;
   }
 
