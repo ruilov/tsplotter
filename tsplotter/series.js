@@ -1029,3 +1029,33 @@ for(var funcName in to_import)
   make_num_to_series_transform(to_import[funcName]);
 
 math.import(to_import);
+
+/**********************************************************
+*
+* syntactic sugar
+*
+*********************************************************/
+
+var strip_func = function(root,start_month,num_months) {
+  var month_codes = ['F','G','H','J','K','M','N','Q','U','V','X','Z'];
+  var month_letter = start_month.substring(0,1);
+  var month_idx = month_codes.indexOf(month_letter);
+  var year = parseInt(start_month.substring(1));
+
+  var formula = "(";
+  for(var i=0; i < num_months; i++) {
+    formula += root + month_codes[month_idx] + year;
+    if(i<num_months-1) formula += "+";
+
+    month_idx++;
+    if(month_idx == 12) {
+      month_idx = 0;
+      year++;
+    }
+  }
+  formula += ")/" + num_months
+
+  return math.parse(formula);
+}
+
+math.import_syntactic_sugar("strip", strip_func);

@@ -88,8 +88,8 @@ class Evaluator {
 
   symbol_nodes(parsed_formula) {
     return parsed_formula.filter(x => 
-      x.isSymbolNode && (parsed_formula.type != "AssignmentNode" || x.name != parsed_formula.name)
-    ).map(x => x.name.replace("_dict", ""));
+      x.isSymbolNode && (parsed_formula.type != "AssignmentNode" || x.name != parsed_formula.name) // if thi is an assignment, skip the symbol on the left hand side
+    ).map(x => x.name.replace("_dict", "")); // I made a change to math.js that adds _dict to symbol nodes
   }
 
   get start_text() {

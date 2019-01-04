@@ -1,6 +1,7 @@
 /**
  * RLV: I added a | at line 28569 (search for isValidLatinOrGreek)
  * RLV: node code in parseAccessors (search for _dict)
+ * RLV: added syntactic sugar capability. Module 492. Searching for 'syntactic' will reveal all changes
  *
  * math.js
  * https://github.com/josdejong/mathjs
@@ -141,6 +142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var importFactory = __webpack_require__(10);
 	var configFactory = __webpack_require__(12);
+	var importSSFactory = __webpack_require__(492);
 
 	/**
 	 * Math.js core. Creates a new, empty math.js instance
@@ -250,6 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // load the import and config functions
 	  math['import'] = load(importFactory);
 	  math['config'] = load(configFactory);
+	  math['import_syntactic_sugar'] = load(importSSFactory);
 
 	  // apply options
 	  if (options) {
@@ -29302,7 +29305,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	          closeParams();
 	          getToken();
 
-	          node = new FunctionNode(node, params);
+	          // if this is a syntactic sugar function replace the node completely with a new node, defined by it's syntacticSugar function
+	      	  if(node.name in math['syntacticSugar']) {
+	      		var arg_vals = [];
+	      		for(var arg of params) arg_vals.push(arg.eval());
+	      		node = math['syntacticSugar'][node.name].apply(null,arg_vals);
+	      	  } else {
+	          	node = new FunctionNode(node, params);
+	          }
 	        }
 	        else {
 	          // implicit multiplication like (2+3)(4+5)
@@ -53089,7 +53099,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	// TODO: implement an InvalidValueError?
 
 
+/***/ },
+/* 492 */
+/***/ function(module, exports, __webpack_require__) {
+	
+	function factory (type, config, load, typed, math) {
+		math['syntacticSugar'] = {};
+		function import_ss(name,callback) {
+	  		math['syntacticSugar'][name] = callback;
+	  	}
+	  	return import_ss;
+	}
+
+	exports.math = true; // request access to the math namespace as 5th argument of the factory function
+	exports.name = 'import_syntactic_sugar';
+	exports.factory = factory;
+	exports.lazy = true;
 /***/ }
+
 /******/ ])
 });
 ;
