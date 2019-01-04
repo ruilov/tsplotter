@@ -143,6 +143,8 @@
         <li><code>dx(series,window=number|optional)</code>: returns the diference in the x-coordinates between one point and the next. The values of the series are not used.</li>
 
         <li><code>bounds(series,string1|number1,string2|number2)</code>: restricts the series to the x coordinates >= string1|number1 and <= string2|number2. Example bounds: 10.5, "10.5", 2016-01-01".</li>
+
+        <li><code>strip(string,string,number)</code>: calculates the strip of a commodity. The arguments are: root symbol, start month, number of months. For example: strip("CME|CL","F2020",3) will calculate (CME|CLF2020 + CME|CLG2020 + CME|CLH2020)/3. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most. Also note that as currently implemented, no formulas or variables are allowed in any of the arguments.</li>
       </ul>
 
       <br>
