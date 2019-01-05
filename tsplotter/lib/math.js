@@ -28230,6 +28230,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // pass extra nodes
 	    extra_nodes = (options && options.nodes) ? options.nodes : {};
+	    parsing_scope = options.scope;
 
 	    if (typeof expr === 'string') {
 	      // parse a single expression
@@ -28322,6 +28323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var token_type = TOKENTYPE.NULL;  // type of the token
 	  var nesting_level = 0;            // level of nesting inside parameters, used to ignore newline characters
 	  var conditional_level = null;     // when a conditional is being parsed, the level of the conditional is stored here
+	  var parsing_scope = {};						// RLV: parsing now requires a scope so that we can resolve syntactic sugar expressions
 
 	  /**
 	   * Get the first character from the expression.
@@ -29307,9 +29309,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	          // if this is a syntactic sugar function replace the node completely with a new node, defined by it's syntacticSugar function
 	      	  if(node.name in math['syntacticSugar']) {
-	      		var arg_vals = [];
-	      		for(var arg of params) arg_vals.push(arg.eval());
-	      		node = math['syntacticSugar'][node.name].apply(null,arg_vals);
+	      			var arg_vals = [];
+	      			for(var arg of params) {
+	      				arg_vals.push(arg.eval(parsing_scope));
+	      			}
+	      			var new_formula = math['syntacticSugar'][node.name].apply(null,arg_vals);
+	      			node = math.parse(new_formula,{'scope': parsing_scope});
 	      	  } else {
 	          	node = new FunctionNode(node, params);
 	          }
@@ -33764,11 +33769,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return typed('compile', {
 	    'string': function (expr) {
 	      var scope = {};
-	      return parse(expr).compile().eval(scope);
+	      return parse(expr,{'scope': scope}).compile().eval(scope);
 	    },
 
 	    'string, Object': function (expr, scope) {
-	      return parse(expr).compile().eval(scope);
+	      return parse(expr,{'scope': scope}).compile().eval(scope);
 	    },
 
 	    'Array | Matrix': function (expr) {

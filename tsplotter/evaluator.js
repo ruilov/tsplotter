@@ -65,20 +65,34 @@ class Evaluator {
     };
   }
 
+  // formula should be one of this.formula_area.parsed_formulas
+  // note that in the context of formula_area parsing means extracting the text of the formula out of the html
+  // in the context of the evaluator, parsing means extracting the math.js tree out of the formula text
+  parse_formula(formula,scope) {
+    var formula_text = formula.text.trim();
+    formula_text = formula_text.replace(String.fromCharCode(160), "");
+    if (formula_text.length === 0) return null;
+    var parsed_formula = math.parse(formula_text,{'scope': scope});
+    return parsed_formula;
+  }
+
   get symbol_deps() {
     var formulas = this.formula_area.parsed_formulas;
 
     var symbols = {};
     var assignedSymbols = {}; // these are symbols that were assigned so we don't need to load
+    var scope = {};
 
     for (var formula2 of formulas) {
       if (formula2.off) continue;
-      var formula = formula2.text.trim();
-      formula = formula.replace(String.fromCharCode(160), "");
-      if (formula.length === 0) continue;
-
-      var parsed_formula = math.parse(formula);
+      var parsed_formula = this.parse_formula(formula2,scope);
+      if(parsed_formula===null) continue;
       var thisSymbols = this.symbol_nodes(parsed_formula);
+
+      // if the formula doesn't depend on external data, evaluate it. This could be something like n=3
+      // where n is used later on in the scope to for example help parse syntatic sugar expressions
+      if (thisSymbols.length === 0) parsed_formula.eval(scope);
+
       for (var symbol of thisSymbols)
         if (!(symbol in assignedSymbols)) symbols[symbol] = 1;
       if (parsed_formula.type == "AssignmentNode") assignedSymbols[parsed_formula.name] = 1;
@@ -172,17 +186,17 @@ class Evaluator {
     for (var fi = 0; fi < formulas.length; fi++) {
       if (formulas[fi].off) continue;
 
-      var formulaText = formulas[fi].text.trim();
-      formulaText = formulaText.replace(String.fromCharCode(160), "");
-      if (formulaText.length === 0) continue;
+      var parsed = this.parse_formula(formulas[fi],this.scope);
+      if(parsed===null) continue;
+      var thisSymbols = this.symbol_nodes(parsed);
 
       // eval it
       var evaled;
       try {
         // populate the scope with cached data from quandl before evaluing
-        this.populate_scope(formulaText);
-        evaled = math.eval(formulaText, this.scope);
-        if (evaled === null) throw formulaText + ": error evaluating series";
+        this.populate_scope(thisSymbols);
+        evaled = parsed.eval(this.scope);
+        if (evaled === null) throw formulas[fi].text + ": error evaluating series";
         if (typeof(evaled) == "number") evaled = make_constant_series(evaled, this.start, this.end);
       } catch (err) {
         console.log(err);
@@ -196,7 +210,7 @@ class Evaluator {
       if (formulas[fi].color) formulas[fi].color = rgb2hex(formulas[fi].color);
       
       var title = formulas[fi].title;
-      if (!title) title = this.make_title(formulaText);
+      if (!title) title = this.make_title(formulas[fi].text,parsed,thisSymbols);
       formulas[fi].display_title = title;
     }
 
@@ -244,9 +258,7 @@ class Evaluator {
   }
 
   // finds out what symbols this formula depends on, and if they are cached then populate them in the scope
-  populate_scope(formula) {
-    var parsed = math.parse(formula);
-    var thisSymbols = this.symbol_nodes(parsed);
+  populate_scope(thisSymbols) {
     for (var symbol of thisSymbols) {
       if (!(symbol in this.scope)) {
         var database = this.symbol_database(symbol);
@@ -268,11 +280,8 @@ class Evaluator {
     }
   }
 
-  make_title(formula) {
+  make_title(formula,parsed,thisSymbols) {
     var title = formula;
-
-    var parsed = math.parse(formula);
-    var thisSymbols = this.symbol_nodes(parsed);
     if (thisSymbols.length == 1) {
       var node = parsed;
       if (parsed.type == "AssignmentNode") node = parsed.value;
@@ -360,7 +369,7 @@ class Evaluator {
 
       if(!("Time Series (Daily)" in retVal)) {
         var errMsg = "The alpha Vantage stock database (https://www.alphavantage.co) returned an error.";
-        if("Information" in retVal) errMsg += "<br>" + retVal["Information"]+"<br>";
+        if("Information" in retVal) errMsg += "<br>" + retVal.Information+"<br>";
         console.log(retVal);
         tt.error_messages.push(symbol + ": " + errMsg);
         tt.error_fn();
@@ -368,7 +377,7 @@ class Evaluator {
       }
 
       var dataset = retVal["Time Series (Daily)"];
-      var col_names = Object.keys(Object.values(dataset)[0]).map(x => x.split(".")[1].trim())
+      var col_names = Object.keys(Object.values(dataset)[0]).map(x => x.split(".")[1].trim());
 
       tt.cached_datasets[symbol] = dataset;
       tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot

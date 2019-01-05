@@ -1053,9 +1053,8 @@ var strip_func = function(root,start_month,num_months) {
       year++;
     }
   }
-  formula += ")/" + num_months
-
-  return math.parse(formula);
-}
+  formula += ")/" + num_months;
+  return formula;
+};
 
 math.import_syntactic_sugar("strip", strip_func);
