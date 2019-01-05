@@ -89,9 +89,11 @@ class Evaluator {
       if(parsed_formula===null) continue;
       var thisSymbols = this.symbol_nodes(parsed_formula);
 
-      // if the formula doesn't depend on external data, evaluate it. This could be something like n=3
-      // where n is used later on in the scope to for example help parse syntatic sugar expressions
-      if (thisSymbols.length === 0) parsed_formula.eval(scope);
+      // evaluate the formula if possible so that the parsing scope can be as complete as it can be
+      // obv some formulas won't evaluate due to dependencies on external data
+      try {
+        parsed_formula.eval(scope);
+      } catch(err) {}
 
       for (var symbol of thisSymbols)
         if (!(symbol in assignedSymbols)) symbols[symbol] = 1;
