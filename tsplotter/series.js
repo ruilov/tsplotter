@@ -1058,3 +1058,15 @@ var strip_func = function(root,start_month,num_months) {
 };
 
 math.import_syntactic_sugar("strip", strip_func);
+
+var nrby_strip_func = function(root,start_month,num_months) {
+  var formula = "(";
+  for(var i=start_month; i < start_month+num_months; i++) {
+    formula += root + i;
+    if(i<start_month+num_months-1) formula += "+";
+  }
+  formula += ")/" + num_months;
+  return formula;
+}
+
+math.import_syntactic_sugar("nrby_strip", nrby_strip_func);
