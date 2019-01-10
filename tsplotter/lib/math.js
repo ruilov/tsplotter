@@ -2,6 +2,7 @@
  * RLV: I added a | at line 28569 (search for isValidLatinOrGreek)
  * RLV: node code in parseAccessors (search for _dict)
  * RLV: added syntactic sugar capability. Module 492. Searching for 'syntactic' will reveal all changes
+ * RLV: implemented a state stack in the parsing module to make syntactic sugar work properly. Search for state_stack
  *
  * math.js
  * https://github.com/josdejong/mathjs
@@ -28325,6 +28326,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var conditional_level = null;     // when a conditional is being parsed, the level of the conditional is stored here
 	  var parsing_scope = {};						// RLV: parsing now requires a scope so that we can resolve syntactic sugar expressions
 
+	  var state_stack = [];
+
+	  function state_stack_push() {
+	  	var state = {
+	  		"expression": expression,
+	  		"index": index,
+	  		"c": c,
+	  		"token": token,
+	  		"token_type": token_type,
+	  		"nesting_level": nesting_level,
+	  		"conditional_level": conditional_level
+	  	}
+	  	state_stack.push(state);
+	  }
+
+	  function state_stack_pop() {
+	  	var state = state_stack.pop();
+	  	expression = state.expression;
+	  	index = state.index;
+	  	c = state.c;
+	  	token = state.token;
+	  	token_type = state.token_type;
+	  	nesting_level = state.nesting_level;
+	  	conditional_level = state.conditional_level;
+	  }
+
 	  /**
 	   * Get the first character from the expression.
 	   * The character is stored into the char c. If the end of the expression is
@@ -29314,7 +29341,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      				arg_vals.push(arg.eval(parsing_scope));
 	      			}
 	      			var new_formula = math['syntacticSugar'][node.name].apply(null,arg_vals);
+
+	      			state_stack_push();
 	      			node = math.parse(new_formula,{'scope': parsing_scope});
+	      			state_stack_pop();
 	      	  } else {
 	          	node = new FunctionNode(node, params);
 	          }
