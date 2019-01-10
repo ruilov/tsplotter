@@ -145,6 +145,8 @@
         <li><code>bounds(series,string1|number1,string2|number2)</code>: restricts the series to the x coordinates >= string1|number1 and <= string2|number2. Example bounds: 10.5, "10.5", 2016-01-01".</li>
 
         <li><code>strip(string,string,number)</code>: calculates the strip of a commodity. The arguments are: root symbol, start month, number of months. For example: strip("CME|CL","F2020",3) will calculate (CME|CLF2020 + CME|CLG2020 + CME|CLH2020)/3. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most.</li>
+
+        <li><code>nrby_strip(string,number,number)</code>: similarly to 'strip', calculates the strip of a commodity. However the symbols used here are continuous futures symbols. For example: strip("CHRIS|CME_CL",2,3) will calculate (CHRIS|CME_CL2 + CHRIS|CME_CL3 + CHRIS|CME_CL4)/3. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most.</li>
       </ul>
 
       <br>
