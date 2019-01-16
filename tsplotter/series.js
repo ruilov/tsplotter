@@ -570,12 +570,28 @@ function constructCum(generator,toStr_func) {
   return funcOnGenerator(generator,calcFunc,toStr_func);
 }
 
+function constructProd(generator,toStr_func) {
+  var calcFunc = function(values) {
+    return _.reduce(values,function(x,y) {return x*y;},1);
+  };
+  return funcOnGenerator(generator,calcFunc,toStr_func);
+}
+
 var cumFunc = math.typed('cum',{
   'Series, number': function(s,w) {
     return constructCum(s.subgenerator(w),s.toStr_func());
   },
   'Series': function(s) {
     return constructCum(s.cumgenerator(),s.toStr_func());
+  },
+});
+
+var prodFunc = math.typed('prod',{
+  'Series, number': function(s,w) {
+    return constructProd(s.subgenerator(w),s.toStr_func());
+  },
+  'Series': function(s) {
+    return constructProd(s.cumgenerator(),s.toStr_func());
   },
 });
 
@@ -979,6 +995,7 @@ var to_import = {
   std: stdFunc,
   avg: avgFunc,
   cum: cumFunc,
+  prod: prodFunc,
 
   d: dFunc,
   r: rFunc,
