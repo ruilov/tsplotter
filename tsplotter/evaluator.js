@@ -419,10 +419,13 @@ class Evaluator {
       var col_names = dataset.column_names.map(x => x.toLowerCase());
       var dateIdx = col_names.indexOf("date");
       if (dateIdx < 0) {
-        console.log(dataset.column_names);
-        tt.error_messages.push(symbol + ": date column not found");
-        tt.error_fn();
-        return;
+        dateIdx = col_names.indexOf("month"); // the EIA database is formatted by month
+        if (dateIdx < 0) {
+          console.log(dataset.column_names);
+          tt.error_messages.push(symbol + ": date column not found");
+          tt.error_fn();
+          return;
+        }
       }
 
       // parse the dates
