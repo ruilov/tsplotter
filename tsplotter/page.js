@@ -67,7 +67,7 @@ class Page {
 
   get quandl_key() {
     var quandl_api_key = localStorage.quandl_key;
-    if (typeof(quandl_api_key) == "undefined" || quandl_api_key === null) quandl_api_key = "";
+    if (typeof(quandl_api_key) == "undefined" || quandl_api_key === null) quandl_api_key = "jv5gSKq_-UbB7qqotxH6";
     // localStorage.removeItem("quandl_key");
     return quandl_api_key;
   }
