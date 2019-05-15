@@ -10,13 +10,17 @@ function show_link_button_cb() {
 
   $.ajax({
     type: "POST",
-    url: "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDgUdSlS5QwAUMW8OtQ5mkJmOShSdPeF1A",
-    contentType: "application/json",
-    data: JSON.stringify({"longUrl": permalink}),
+    url: "https://api.rebrandly.com/v1/links",
+    data: JSON.stringify({"destination": permalink}),
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": "299a191320804d54ba3a4c66b489b08b",
+    },
+    dataType: "json",
     success: function(data) {
       // we can't copy the url to the clipboard from here because we can only do that from a trusted user action
       // but since the url is short now, it's ok to just display it
-      var shortUrl = data["id"];
+      var shortUrl = data["shortUrl"];
       HTML.show_perma_link(shortUrl);
     },
   });
