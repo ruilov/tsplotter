@@ -10,7 +10,7 @@ class Evaluator {
       "GOOG": "Close",
       "YAHOO": "Close",
       "JODI": "Value",
-      "FRED": "VALUE",
+      "FRED": "Value",
       "BOE": "Value",
       "MOODY": "VALUE",
       "STOCK": "adjusted close",
@@ -195,7 +195,7 @@ class Evaluator {
       // eval it
       var evaled;
       try {
-        // populate the scope with cached data from quandl before evaluing
+        // populate the scope with cached data before evaluing
         this.populate_scope(thisSymbols);
         evaled = parsed.eval(this.scope);
         if (evaled === null) throw formulas[fi].text + ": error evaluating series";
@@ -322,6 +322,16 @@ class Evaluator {
     return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
   }
 
+  fred_url(symbol) {
+    var ticker = symbol.split("|")[1];  // guarantee to start with FRED|
+    // work around for CORS
+    var url = "https://cors-anywhere.herokuapp.com/https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+
+    if (this.start_text.length > 0) url += "&observation_start=" + this.start_text;
+    if (this.end_text.length > 0) url += "&observation_end=" + this.end_text;
+    return url;
+  }
+
   evaluate(plot_cb, error_cb) {
     this.error_messages = [];
     this.plot_cb = plot_cb;
@@ -348,6 +358,13 @@ class Evaluator {
         console.log("calling: " + url);
         $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
+      else if(symbol.startsWith("FRED|")) {
+        // we bypass quandl for FRED because (a) fred has an API, (b) quandl doesn't have all the data in its fred database
+        var url = this.fred_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, {"origin": "api.stlouisfed.org"}, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      } 
       else {
         var url = this.quandl_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
@@ -358,6 +375,41 @@ class Evaluator {
     HTML.cursor_style("progress");
 
     this.eval_fn(); // in case there were no json calls
+  }
+
+  fred_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      if("Error Message" in retVal) {
+        console.log(retVal);
+        tt.error_messages.push(symbol + ": " + retVal["Error Message"]);
+        tt.error_fn();
+        return;
+      }
+
+      console.log(retVal);
+
+      var dataset = retVal;
+      tt.cached_datasets[symbol] = dataset;
+      tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot
+      // if the dates don't go as far as what we're asking for, use instead the dates that we asked for
+      // so that the eval function knows that this dataset is now cached
+      tt.cached_datasets[symbol].start = Math.min(parseDate(dataset.observation_start),tt.start);
+      tt.cached_datasets[symbol].end = Math.max(parseDate(dataset.observation_end),tt.end);
+      tt.cached_datasets[symbol].data2 = {"Value": new Series()};
+
+      for(var idx in dataset["observations"]) {
+        var val = parseFloat(dataset["observations"][idx]["value"])
+        var dateStr = dataset["observations"][idx]["date"]
+        // this is a performance optimization. For some reason Series.put is slow!
+        if(idx==0)
+            tt.cached_datasets[symbol].data2["Value"].put(dateStr,val);
+          else
+            tt.cached_datasets[symbol].data2["Value"].map[dateStr] = val;
+      }
+
+      tt.eval_fn();
+    };
   }
 
   alphaadv_success_cb(symbol) {
