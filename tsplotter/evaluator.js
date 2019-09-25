@@ -14,7 +14,6 @@ class Evaluator {
       "BOE": "Value",
       "MOODY": "VALUE",
       "STOCK": "adjusted close",
-      "FRED": "Value"
     };
   }
 
@@ -312,7 +311,7 @@ class Evaluator {
       return null;
     }
 
-    var url = "https://www.quandl.com/api/v3/datasets/" + symbol.replace("|", "/").toUpperCase() + ".json?api_key=" + thePage.quandl_key;
+    var url = "https://www.quandl.com/api/v3/datasets/" + symbol.replace("|", "/").toUpperCase() + ".json?api_key=" + thePage.get_key("quandl");
     if (this.start_text.length > 0) url += "&start_date=" + this.start_text;
     if (this.end_text.length > 0) url += "&end_date=" + this.end_text;
     return url;
@@ -320,7 +319,7 @@ class Evaluator {
 
   alphaadv_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
-    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=WI0Y0BUXESQK8GVT";
+    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
   }
 
   evaluate(plot_cb, error_cb) {
@@ -348,7 +347,8 @@ class Evaluator {
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
         $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
-      } else {
+      } 
+      else {
         var url = this.quandl_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
@@ -357,7 +357,7 @@ class Evaluator {
     }
     HTML.cursor_style("progress");
 
-    this.eval_fn(); // in case there were not json calls
+    this.eval_fn(); // in case there were no json calls
   }
 
   alphaadv_success_cb(symbol) {

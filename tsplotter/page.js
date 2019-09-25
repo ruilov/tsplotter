@@ -37,15 +37,9 @@ class Page {
   }
 
   f9_cb() {
-    HTML.hide_key_warning();
     HTML.hide_perma_link();
     HTML.show_chart();
     
-    if(this.quandl_key === "") {
-      HTML.show_key_warning();
-      return;
-    }
-
     HTML.cursor_style("progress");
     this.evaluator.evaluate(f => this.plot.plot(f), HTML.show_error);
   }
@@ -65,22 +59,23 @@ class Page {
     return ans;
   }
 
-  get quandl_key() {
-    var quandl_api_key = localStorage.quandl_key;
-    if (typeof(quandl_api_key) == "undefined" || quandl_api_key === null) quandl_api_key = "jv5gSKq_-UbB7qqotxH6";
-    // localStorage.removeItem("quandl_key");
-    return quandl_api_key;
-  }
-
   set state(state) {
     this.plot.state = state;
     this.formula_area.state = state;
     this.evaluator.state = state;
   }
 
-  set quandl_key(key) {
-    localStorage.setItem("quandl_key", key);
+  get_key(type) {
+    var keys = {
+      "quandl": [106, 118, 53, 103, 83, 75, 113, 95, 45, 85, 98, 66, 55, 113, 113, 111, 116, 120, 72, 54],
+      "alphaadvantage": [87, 73, 48, 89, 48, 66, 85, 88, 69, 83, 81, 75, 56, 71, 86, 84],
+      "rebrandly": [50, 57, 57, 97, 49, 57, 49, 51, 50, 48, 56, 48, 52, 100, 53, 52, 98, 97, 51, 97, 52, 99, 54, 54, 98, 52, 56, 57, 98, 48, 56, 98],
+    }
+
+    var ans = String.fromCharCode.apply(null,keys[type]);
+    return ans;
   }
+
 
   make_permalink() {
     var state = this.state;

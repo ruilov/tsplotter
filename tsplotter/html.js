@@ -79,17 +79,6 @@ class HTML {
     errMsg.style.visibility = "hidden";
   }
 
-  static show_key_warning() {
-    var elem = document.getElementById("key_warning");
-    elem.innerHTML = "To use tsplotter you need a <a href=\"tsplotter/user_manual.html#key\">quandl</a> account.";
-    elem.style.visibility = "visible";
-  }
-
-  static hide_key_warning() {
-    var elem = document.getElementById("key_warning");
-    elem.style.visibility = "hidden";
-  }
-
   static show_perma_link(permalink) {
     var elem = HTML.perma_link_elem();
     elem.innerHTML = permalink;

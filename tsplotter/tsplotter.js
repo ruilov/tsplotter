@@ -1,10 +1,3 @@
-function quandl_button_cb() {
-  var key = prompt("Enter your quandl.com API key", thePage.quandl_key);
-  if (key !== null) {
-    thePage.quandl_key = key;
-  }
-}
-
 function show_link_button_cb() {
   var permalink = thePage.make_permalink();
 
@@ -14,7 +7,7 @@ function show_link_button_cb() {
     data: JSON.stringify({"destination": permalink}),
     headers: {
       "Content-Type": "application/json",
-      "apikey": "299a191320804d54ba3a4c66b489b08b",
+      "apikey": thePage.get_key("rebrandly"),
     },
     dataType: "json",
     success: function(data) {
