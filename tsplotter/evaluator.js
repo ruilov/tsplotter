@@ -198,7 +198,7 @@ class Evaluator {
         // populate the scope with cached data before evaluing
         this.populate_scope(thisSymbols);
         evaled = parsed.eval(this.scope);
-        if (evaled === null) throw formulas[fi].text + ": error evaluating series";
+        if (evaled == null) throw formulas[fi].text + ": error evaluating series";
         if (typeof(evaled) == "number") evaled = make_constant_series(evaled, this.start, this.end);
       } catch (err) {
         console.log(err);
@@ -492,13 +492,16 @@ class Evaluator {
       } else {
         tt.cached_datasets[symbol] = dataset;
         tt.cached_datasets[symbol].data2 = {};
-        for (var cn of dataset.column_names)
+        for (var cn of dataset.column_names) {
           tt.cached_datasets[symbol].data2[cn] = new Series();
+          tt.cached_datasets[symbol].data2[cn.toLowerCase()] = tt.cached_datasets[symbol].data2[cn]; // allows the user to not worry about case
+        }
       }
 
       // add the data
       for (var ci = 0; ci < dataset.column_names.length; ci++) {
         var colName = dataset.column_names[ci];
+        var colName_low = dataset.column_names[ci].toLowerCase();
         for (var ri = 0; ri < dataset.data.length; ri++) {
           var dt = dataset.data[ri][dateIdx];
           var val = dataset.data[ri][ci];
