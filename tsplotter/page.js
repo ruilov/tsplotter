@@ -6,12 +6,13 @@ class Page {
 
     var key_shortcuts = {
       "F9": () => this.f9_cb(),
+      "CTRL+ALT+C": () => this.ctrl_alt_c(),
       "TAB": () => this.formula_area.ctrl_t_cb(),
       "CTRL+B": () => this.formula_area.ctrl_b_cb(),
       "CTRL+H": () => this.formula_area.ctrl_h_cb(),
       "CTRL+ALT+T": () => this.formula_area.ctrl_t_cb(),
       "CTRL+E": () => this.formula_area.ctrl_e_cb(),
-      "CTRL+ALT+C": () => this.formula_area.ctrl_alt_c_cb(),
+      "CTRL+ALT+V": () => this.formula_area.ctrl_alt_v_cb(),
     };
 
     for (var sc in key_shortcuts) {
@@ -42,6 +43,50 @@ class Page {
     
     HTML.cursor_style("progress");
     this.evaluator.evaluate(f => this.plot.plot(f), HTML.show_error);
+  }
+
+  static ctrl_alt_c() {
+    thePage.ctrl_alt_c();
+  }
+
+  ctrl_alt_c() {
+    this.evaluator.evaluate(f => this.ctrl_alt_c_plot_callback(f), HTML.show_error);
+  }
+
+  ctrl_alt_c_plot_callback(formulas) {
+    this.plot.plot(formulas);
+    var [table,options] = this.plot.data_and_options(formulas,true);
+
+    var table_str = "<table>";
+    for(var row of table) {
+      table_str += "<tr>";
+      for(var cell of row) {
+        if(cell instanceof Date) cell = dateToStr(cell); // dateToStr is defined in series.js
+        if(cell === null) cell = "";
+        table_str += "<td>" + cell + "</td>";
+      }
+      table_str += "</tr>\n";
+    }
+    table_str += "</table>";
+
+    this.copyToClipboard(table_str);
+  }
+
+  copyToClipboard(str) {
+    const el = document.createElement('textarea');  // Create a <textarea> element
+    el.value = str;                                 // Set its value to the string that you want copied
+    el.setAttribute('readonly', '');                // Make it readonly to be tamper-proof
+    el.style.position = 'absolute';                 
+    el.style.left = '-9999px';                      // Move outside the screen to make it invisible
+    document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
+    const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;                                    
+    el.select();                                    // Select the <textarea> content
+    document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
+    document.body.removeChild(el);                  // Remove the <textarea> element
+    if (selected) {                                 // If a selection existed before copying
+      document.getSelection().removeAllRanges();    // Unselect everything on the HTML document
+      document.getSelection().addRange(selected);   // Restore the original selection
+    }
   }
 
   customize_cb() {

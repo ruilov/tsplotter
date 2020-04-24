@@ -229,7 +229,7 @@ class FormulaArea {
     });
   }
 
-  ctrl_alt_c_cb() {
+  ctrl_alt_v_cb() {
     this.generic_formula_area_cb(false, function(x) {
       x.color = false;
     });

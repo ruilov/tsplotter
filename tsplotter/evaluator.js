@@ -387,7 +387,7 @@ class Evaluator {
         return;
       }
 
-      console.log(retVal);
+      // console.log(retVal);
 
       var dataset = retVal;
       tt.cached_datasets[symbol] = dataset;
