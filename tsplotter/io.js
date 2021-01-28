@@ -33,6 +33,7 @@ class IO {
     };
 
     var socket = IO.websocket_connect("9001");
+    console.log(socket);
     if(socket===null) {
       onerror();
     } else {
