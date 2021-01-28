@@ -32,7 +32,7 @@ class IO {
       saveTextAs(make_json(), "plot.ts");
     };
 
-    var socket = IO.websocket_connect("9001");
+    // var socket = IO.websocket_connect("9001");
     saveTextAs(make_json(), "plot.ts");
 
     // if(socket===null) {
