@@ -33,13 +33,14 @@ class IO {
     };
 
     var socket = IO.websocket_connect("9001");
-    console.log(socket);
-    if(socket===null) {
-      onerror();
-    } else {
-      socket.onopen = onopen;
-      socket.onerror = onerror;
-    }
+    saveTextAs(make_json(), "plot.ts");
+
+    // if(socket===null) {
+    //   onerror();
+    // } else {
+    //   socket.onopen = onopen;
+    //   socket.onerror = onerror;
+    // }
   }
 
   static parse_excel_data(text) {
