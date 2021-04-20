@@ -14,6 +14,7 @@ class Evaluator {
       "BOE": "Value",
       "MOODY": "VALUE",
       "STOCK": "adjusted close",
+      "CRYPTO": "Value",
     };
   }
 
@@ -317,6 +318,13 @@ class Evaluator {
     return url;
   }
 
+  crypto_url(symbol) {
+    var ticker = symbol.split("|")[1].toLowerCase();  // guarantee to start with CRYPTO|
+    var sd = parseDate(this.start_text).getTime()/1000;
+    var ed = parseDate(this.end_text).getTime()/1000;
+    return "https://api.coingecko.com/api/v3/coins/" + ticker + "/market_chart/range?vs_currency=usd&from=" + sd + "&to=" + ed;
+  }
+
   alphaadv_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
     return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
@@ -364,6 +372,12 @@ class Evaluator {
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
         $.getJSON(url, {"origin": "api.stlouisfed.org"}, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      } 
+      else if(symbol.startsWith("CRYPTO|")) {
+        var url = this.crypto_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.crypto_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
       else {
         var url = this.quandl_url(symbol);
@@ -463,6 +477,43 @@ class Evaluator {
       tt.eval_fn();
     };
   }
+
+  crypto_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      // CRYPTO|bitcoin
+      console.log("success!");
+      
+      if("error" in retVal) {
+        console.log(retVal);
+        tt.error_messages.push(symbol + ": " + retVal["Error Message"]);
+        tt.error_fn();
+        return;
+      }
+
+      console.log(retVal);
+
+      var dataset = retVal["prices"];
+      tt.cached_datasets[symbol] = dataset;
+      tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot
+      // if the dates don't go as far as what we're asking for, use instead the dates that we asked for
+      // so that the eval function knows that this dataset is now cached
+      tt.cached_datasets[symbol].start = Math.min(new Date(dataset[0][0]),tt.start);
+      tt.cached_datasets[symbol].end = Math.max(new Date(dataset[dataset.length-1][0]),tt.end);
+      tt.cached_datasets[symbol].data2 = {"Value": new Series()};
+
+      for(var idx in dataset) {
+        var val = dataset[idx][1];
+        var dateStr = dateToStr(new Date(dataset[idx][0]));
+        // this is a performance optimization. For some reason Series.put is slow!
+        if(idx==0)
+            tt.cached_datasets[symbol].data2["Value"].put(dateStr,val);
+          else
+            tt.cached_datasets[symbol].data2["Value"].map[dateStr] = val;
+      };
+      tt.eval_fn();
+    };
+  };
 
   quandl_success_cb(symbol) {
     var tt = this;
