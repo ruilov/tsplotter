@@ -320,6 +320,7 @@ class Evaluator {
 
   crypto_url(symbol) {
     var ticker = symbol.split("|")[1].toLowerCase();  // guarantee to start with CRYPTO|
+    ticker = ticker.replaceAll("_","-");
     var sd = parseDate(this.start_text).getTime()/1000;
     var ed = parseDate(this.end_text).getTime()/1000;
     return "https://api.coingecko.com/api/v3/coins/" + ticker + "/market_chart/range?vs_currency=usd&from=" + sd + "&to=" + ed;
@@ -334,6 +335,9 @@ class Evaluator {
     var ticker = symbol.split("|")[1];  // guarantee to start with FRED|
     // work around for CORS
     var url = "https://cors-anywhere.herokuapp.com/https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+    // var url_raw = "https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+    // var url = "http://www.whateverorigin.org/get?url=" + encodeURIComponent(url_raw);
+    // console.log(url);
 
     if (this.start_text.length > 0) url += "&observation_start=" + this.start_text;
     if (this.end_text.length > 0) url += "&observation_end=" + this.end_text;
@@ -490,8 +494,6 @@ class Evaluator {
         tt.error_fn();
         return;
       }
-
-      console.log(retVal);
 
       var dataset = retVal["prices"];
       tt.cached_datasets[symbol] = dataset;
