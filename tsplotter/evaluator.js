@@ -328,7 +328,7 @@ class Evaluator {
 
   alphaadv_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
-    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
+    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
   }
 
   fred_url(symbol) {
