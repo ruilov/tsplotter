@@ -13,7 +13,7 @@ class Evaluator {
       "FRED": "Value",
       "BOE": "Value",
       "MOODY": "VALUE",
-      "STOCK": "adjusted close",
+      "STOCK": "close",
       "CRYPTO": "Value",
     };
   }
