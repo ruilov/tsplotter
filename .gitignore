@@ -4,5 +4,6 @@
 *.pyc
 *.xlsx
 *.ts
+.DS_Store
 stock_prices*
 python_scripts/cached/*
