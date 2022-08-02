@@ -3,8 +3,8 @@ class Evaluator {
   static get db_default_tags() {
     return {
       "WIKI": "Adj. Close",
-      "CME": "Settle",
-      "ICE": "Settle",
+      "CME": "Value",
+      "ICE": "Value",
       "CHRIS": "Settle",
       "EIA": "Value",
       "GOOG": "Close",
@@ -344,6 +344,29 @@ class Evaluator {
     return url;
   }
 
+  cme_ice_url(symbol) {
+    if (symbol.indexOf("|") < 0) {
+      this.error_messages.push(symbol + ": malformed database symbol");
+      this.error_fn();
+      return null;
+    }
+    var db = symbol.split("|")[0];
+    var code = symbol.split("|")[1];
+
+    var url = "https://www.quandl.com/api/v3/datatables/";
+    if(db=="ICE") url += "AR/MWIS/?"
+    else if(db=="CME") url += "AR/MWCS/?"
+    else {
+      this.error_messages.push("invalid CME database symbol");
+      this.error_fn();
+      return null; 
+    }
+    url += "code=" + code + "_S&api_key=" + thePage.get_key("quandl_cme");
+    if (this.start_text.length > 0) url += "&date.gte=" + this.start_text;
+    if (this.end_text.length > 0) url += "&date.lte=" + this.end_text;
+    return url;
+  }
+
   evaluate(plot_cb, error_cb) {
     this.error_messages = [];
     this.plot_cb = plot_cb;
@@ -378,6 +401,12 @@ class Evaluator {
       //   console.log("calling: " + url);
       //   $.getJSON(url, {"origin": "api.stlouisfed.org"}, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       // } 
+      else if(symbol.startsWith("CME|") || symbol.startsWith("ICE|")) {
+        var url = this.cme_ice_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.cme_ice_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      } 
       else if(symbol.startsWith("CRYPTO|")) {
         var url = this.crypto_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
@@ -566,6 +595,39 @@ class Evaluator {
     };
   }
 
+  cme_ice_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      var dataset = retVal.datatable;
+
+      // parse the dates
+      // if the dates don't go as far as what we're asking for, use instead the dates that we asked for
+      // so that the eval function knows that this dataset is now cached
+      dataset.start = tt.start;
+      dataset.end = tt.end;
+
+      if (symbol in tt.cached_datasets) {
+        tt.cached_datasets[symbol].start = Math.min(tt.cached_datasets[symbol].start, dataset.start);
+        tt.cached_datasets[symbol].end = Math.max(tt.cached_datasets[symbol].end, dataset.end);
+      } else {
+        tt.cached_datasets[symbol] = dataset;
+        tt.cached_datasets[symbol].data2 = {};
+        tt.cached_datasets[symbol].data2["Value"] = new Series();
+      }
+
+      tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot
+
+      // add the data    
+      for (var ri = 0; ri < dataset.data.length; ri++) {
+        var dt = dataset.data[ri][1];
+        var val = dataset.data[ri][2];
+        tt.cached_datasets[symbol].data2["Value"].put(dt, val);
+      }
+      
+      tt.eval_fn();
+    };
+  }
+
   data_source_error_cb(symbol) {
     var tt = this;
     return function(jqXHR) {
@@ -573,6 +635,7 @@ class Evaluator {
       tt.error_fn();
     };
   }
+
 }
 
 function rgb2hex(rgb) {
