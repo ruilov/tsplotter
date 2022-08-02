@@ -344,7 +344,7 @@ class Evaluator {
     return url;
   }
 
-  cme_ice_url(symbol) {
+  cme_ice_url(symbol,metadata=false) {
     if (symbol.indexOf("|") < 0) {
       this.error_messages.push(symbol + ": malformed database symbol");
       this.error_fn();
@@ -354,16 +354,24 @@ class Evaluator {
     var code = symbol.split("|")[1];
 
     var url = "https://www.quandl.com/api/v3/datatables/";
-    if(db=="ICE") url += "AR/MWIS/?"
-    else if(db=="CME") url += "AR/MWCS/?"
+    if(db=="ICE") {
+      if(metadata) url += "AR/MWIF/?";
+      else url += "AR/MWIS/?";
+    }
+    else if(db=="CME") {
+      if(metadata) url += "AR/MWCF/?";
+      else url += "AR/MWCS/?";
+    }
     else {
       this.error_messages.push("invalid CME database symbol");
       this.error_fn();
       return null; 
     }
     url += "code=" + code + "_S&api_key=" + thePage.get_key("quandl_cme");
-    if (this.start_text.length > 0) url += "&date.gte=" + this.start_text;
-    if (this.end_text.length > 0) url += "&date.lte=" + this.end_text;
+    if(!metadata) {
+      if (this.start_text.length > 0) url += "&date.gte=" + this.start_text;
+      if (this.end_text.length > 0) url += "&date.lte=" + this.end_text;
+    }
     return url;
   }
 
@@ -623,7 +631,30 @@ class Evaluator {
         var val = dataset.data[ri][2];
         tt.cached_datasets[symbol].data2["Value"].put(dt, val);
       }
+
+      // get the metadata for this symbol, which will have the description of it
+      var url = tt.cme_ice_url(symbol,/*metadata*/ true);
+      if (!url) return; // means we couldn't parse the symbol
+      console.log("calling: " + url);
+      $.getJSON(url, tt.meta_cme_ice_success_cb(symbol)).error(tt.data_source_error_cb(symbol));
       
+      // tt.eval_fn();
+    };
+  }
+
+  meta_cme_ice_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      var dataset = retVal.datatable;
+      if(dataset.data.length > 0) // if this was a symbol that doesn't exist, quandl returns an empty array instead of an error
+        tt.cached_datasets[symbol].name = dataset.data[0][1];
+      else {
+        if(symbol in tt.cached_datasets) delete tt.cached_datasets[symbol]
+        tt.error_messages.push(symbol + ": not found");
+        tt.error_fn();
+        return;
+      }
+
       tt.eval_fn();
     };
   }
