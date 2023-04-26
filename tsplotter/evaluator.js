@@ -334,8 +334,8 @@ class Evaluator {
   fred_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with FRED|
     // work around for CORS
-    var url = "https://cors-anywhere.herokuapp.com/https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
-    // var url = "https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+    // var url = "https://cors-anywhere.herokuapp.com/https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+    var url = "https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
     // var url = "http://www.whateverorigin.org/get?url=" + encodeURIComponent(url_raw);
     // console.log(url);
 
@@ -401,14 +401,13 @@ class Evaluator {
         console.log("calling: " + url);
         $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
-      // else if(symbol.startsWith("FRED|")) {
-      //   // THE CORS ANYWHERE PROXY SERVER STOPPED WORKING AND FRED DOESN'T SUPPORT Access-Control-Allow-Origin
-      //   // we bypass quandl for FRED because (a) fred has an API, (b) quandl doesn't have all the data in its fred database
-      //   var url = this.fred_url(symbol);
-      //   if (!url) return; // means we couldn't parse the symbol
-      //   console.log("calling: " + url);
-      //   $.getJSON(url, {"origin": "api.stlouisfed.org"}, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
-      // } 
+      else if(symbol.startsWith("FRED|")) {
+        // we bypass quandl for FRED because (a) fred has an API, (b) quandl doesn't have all the data in its fred database
+        var url = this.fred_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      } 
       else if(symbol.startsWith("CME|") || symbol.startsWith("ICE|")) {
         var url = this.cme_ice_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
