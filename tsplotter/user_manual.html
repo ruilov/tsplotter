@@ -39,9 +39,6 @@
         There's a few methods to get data into <b>tsplotter</b>
 
         <ul>
-          <li><a href="https://data.nasdaq.com/">Quandl</a>: a website that offers a large amount of free and paid data. The search box in <b>tsplotter</b> searches for data in quandl. Quandl is organized into databases. Each database has multiple symbols, each symbol has multiple series. To use quandl data in <b>tsplotter</b>, use the following syntax:
-          <center><pre>DATABASE|SYMBOL["series"]</pre></center>
-
           <li><b>STOCK</b>: for stock prices, <b>tsplotter</b> uses <a href="https://www.alphavantage.co/">Alpha Vantage</a>. An example symbol would be STOCK|SPY, this will plot the "adjusted close" series. Other series available are: open, high, low, close, adjusted close, volume, dividend amount, split coefficient.
 
           <li><b>CME and ICE</b>: example symbols are CME|NYM_CL_Z2024 or ICE|ICEF_SF3_U2024.
@@ -50,6 +47,8 @@
 
           <li><a href="https://www.coingecko.com/en/api#explore-api/">Crypto</a>: database of crypto prices. A full list of coins is available <a href="https://api.coingecko.com/api/v3/coins/list">here</a> (use the 'id' field), but you can get all the usual ones easily with CRYPTO|bitcoin, CRYPTO|ethereum, CRYPTO|ripple, CRYPTO|dogecoin, etc
 
+          <li><a href="https://data.nasdaq.com/">Nasdaq Data Link</a>: used to offer much more data, now only some. Example: BCHAIN|HRATE    
+              
           <li><b>Copy-paste</b>: you can simply copy-paste data from excel with ctrl-v. The data has to be formatted as columns, where the first column holds the dates and the first row holds the headers. The headers determine the name of each series in <b>tsplotter</b></li>
         </ul>
       <br>

@@ -19,14 +19,6 @@ function show_link_button_cb() {
   });
 }
 
-function search_button_cb() {
-  var term = document.getElementById("search-box").value;
-  term = encodeURIComponent(term);
-  var url = "https://www.quandl.com/search?query=" + term + "&type=free";
-  var win = window.open(url, '_blank');
-  win.focus();
-}
-
 function help_button_cb() {
   var url = "tsplotter/user_manual.html";
   var win = window.open(url, '_blank');

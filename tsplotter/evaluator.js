@@ -2,19 +2,12 @@ class Evaluator {
 
   static get db_default_tags() {
     return {
-      "WIKI": "Adj. Close",
       "CME": "Value",
       "ICE": "Value",
-      "CHRIS": "Settle",
-      "EIA": "Value",
-      "GOOG": "Close",
-      "YAHOO": "Close",
-      "JODI": "Value",
-      "FRED": "Value",
-      "BOE": "Value",
-      "MOODY": "VALUE",
       "STOCK": "close",
       "CRYPTO": "Value",
+      "FRED": "Value",
+      "BCHAIN": "Value",
     };
   }
 
@@ -304,17 +297,40 @@ class Evaluator {
     return title;
   }
 
-  // QUANDL
-  quandl_url(symbol) {
+  quandl_url(symbol,metadata=false) {
     if (symbol.indexOf("|") < 0) {
       this.error_messages.push(symbol + ": malformed database symbol");
       this.error_fn();
       return null;
     }
+    var db = symbol.split("|")[0];
+    var code = symbol.split("|")[1];
 
-    var url = "https://www.quandl.com/api/v3/datasets/" + symbol.replace("|", "/").toUpperCase() + ".json?api_key=" + thePage.get_key("quandl");
-    if (this.start_text.length > 0) url += "&start_date=" + this.start_text;
-    if (this.end_text.length > 0) url += "&end_date=" + this.end_text;
+    // ICE docs: https://data.nasdaq.com/databases/MWIS
+    // CME docs: https://data.nasdaq.com/databases/MWCS
+    var url = "https://data.nasdaq.com/api/v3/datatables/"
+    if(db=="ICE") {
+      if(metadata) url += "AR/MWIF/?";
+      else url += "AR/MWIS/?";
+    }
+    else if(db=="CME") {
+      if(metadata) url += "AR/MWCF/?";
+      else url += "AR/MWCS/?";
+    }
+    else {
+      url += "QDL/" + db + "/?";
+    }
+
+    // note that quandl (now nasdaq) has a new way of organizing data. 'code' is not alawys the right parameter to use, but I'm leaving it
+    // in for now since quandl has so little free data left anyway
+    url += "code=" + code;
+    if(db=="ICE" || db=="CME") url +="_S"
+    url += "&api_key=" + thePage.get_key("quandl_cme");
+
+    if(!metadata) {
+      if (this.start_text.length > 0) url += "&date.gte=" + this.start_text;
+      if (this.end_text.length > 0) url += "&date.lte=" + this.end_text;
+    }
     return url;
   }
 
@@ -341,37 +357,6 @@ class Evaluator {
 
     if (this.start_text.length > 0) url += "&observation_start=" + this.start_text;
     if (this.end_text.length > 0) url += "&observation_end=" + this.end_text;
-    return url;
-  }
-
-  cme_ice_url(symbol,metadata=false) {
-    if (symbol.indexOf("|") < 0) {
-      this.error_messages.push(symbol + ": malformed database symbol");
-      this.error_fn();
-      return null;
-    }
-    var db = symbol.split("|")[0];
-    var code = symbol.split("|")[1];
-
-    var url = "https://www.quandl.com/api/v3/datatables/";
-    if(db=="ICE") {
-      if(metadata) url += "AR/MWIF/?";
-      else url += "AR/MWIS/?";
-    }
-    else if(db=="CME") {
-      if(metadata) url += "AR/MWCF/?";
-      else url += "AR/MWCS/?";
-    }
-    else {
-      this.error_messages.push("invalid CME database symbol");
-      this.error_fn();
-      return null; 
-    }
-    url += "code=" + code + "_S&api_key=" + thePage.get_key("quandl_cme");
-    if(!metadata) {
-      if (this.start_text.length > 0) url += "&date.gte=" + this.start_text;
-      if (this.end_text.length > 0) url += "&date.lte=" + this.end_text;
-    }
     return url;
   }
 
@@ -402,17 +387,10 @@ class Evaluator {
         $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
       else if(symbol.startsWith("FRED|")) {
-        // we bypass quandl for FRED because (a) fred has an API, (b) quandl doesn't have all the data in its fred database
         var url = this.fred_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
         $.getJSON(url, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
-      } 
-      else if(symbol.startsWith("CME|") || symbol.startsWith("ICE|")) {
-        var url = this.cme_ice_url(symbol);
-        if (!url) return; // means we couldn't parse the symbol
-        console.log("calling: " + url);
-        $.getJSON(url, this.cme_ice_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
       else if(symbol.startsWith("CRYPTO|")) {
         var url = this.crypto_url(symbol);
@@ -557,54 +535,6 @@ class Evaluator {
   quandl_success_cb(symbol) {
     var tt = this;
     return function(retVal) {
-      var dataset = retVal.dataset;
-      var col_names = dataset.column_names.map(x => x.toLowerCase());
-      var dateIdx = col_names.indexOf("date");
-      if (dateIdx < 0) {
-        dateIdx = col_names.indexOf("month"); // the EIA database is formatted by month
-        if (dateIdx < 0) {
-          console.log(dataset.column_names);
-          tt.error_messages.push(symbol + ": date column not found");
-          tt.error_fn();
-          return;
-        }
-      }
-
-      // parse the dates
-      // if the dates don't go as far as what we're asking for, use instead the dates that we asked for
-      // so that the eval function knows that this dataset is now cached
-      dataset.start = Math.min(parseDate(dataset.start_date),tt.start);
-      dataset.end = Math.max(parseDate(dataset.end_date),tt.end);
-
-      if (symbol in tt.cached_datasets) {
-        tt.cached_datasets[symbol].start = Math.min(tt.cached_datasets[symbol].start, dataset.start);
-        tt.cached_datasets[symbol].end = Math.max(tt.cached_datasets[symbol].end, dataset.end);
-      } else {
-        tt.cached_datasets[symbol] = dataset;
-        tt.cached_datasets[symbol].data2 = {};
-        for (var cn of dataset.column_names) {
-          tt.cached_datasets[symbol].data2[cn] = new Series();
-          tt.cached_datasets[symbol].data2[cn.toLowerCase()] = tt.cached_datasets[symbol].data2[cn]; // allows the user to not worry about case
-        }
-      }
-
-      // add the data
-      for (var ci = 0; ci < dataset.column_names.length; ci++) {
-        var colName = dataset.column_names[ci];
-        var colName_low = dataset.column_names[ci].toLowerCase();
-        for (var ri = 0; ri < dataset.data.length; ri++) {
-          var dt = dataset.data[ri][dateIdx];
-          var val = dataset.data[ri][ci];
-          tt.cached_datasets[symbol].data2[colName].put(dt, val);
-        }
-      }
-      tt.eval_fn();
-    };
-  }
-
-  cme_ice_success_cb(symbol) {
-    var tt = this;
-    return function(retVal) {
       var dataset = retVal.datatable;
 
       // parse the dates
@@ -631,13 +561,17 @@ class Evaluator {
         tt.cached_datasets[symbol].data2["Value"].put(dt, val);
       }
 
-      // get the metadata for this symbol, which will have the description of it
-      var url = tt.cme_ice_url(symbol,/*metadata*/ true);
-      if (!url) return; // means we couldn't parse the symbol
-      console.log("calling: " + url);
-      $.getJSON(url, tt.meta_cme_ice_success_cb(symbol)).error(tt.data_source_error_cb(symbol));
-      
-      // tt.eval_fn();
+      var db = symbol.split("|")[0];
+      if(db=="ICE" || db=="CME") {
+        // get the metadata for this symbol, which will have the description of it
+        var url = tt.quandl_url(symbol,/*metadata*/ true);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, tt.meta_cme_ice_success_cb(symbol)).error(tt.data_source_error_cb(symbol));
+      }
+      else {
+        tt.eval_fn();
+      }
     };
   }
 
