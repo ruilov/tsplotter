@@ -449,39 +449,6 @@ var firstFunc = math.typed("first",{
   }
 });
 
-var supFunc = math.typed('sup', {
-  'Series': function (s) {
-    var arr = s.asSortedArray();
-    if(arr.length===0) return s;
-    
-    var ans = {};
-    var toStr_func = s.toStr_func();
-    var sup = arr[0][1];
-    for(var i=0; i<arr.length; i++) {
-      sup = Math.max(sup,arr[i][1]);
-      ans[toStr_func(arr[i][0])] = sup;
-    }
-    return make_series(ans);
-  },
-});
-
-var infFunc = math.typed('inf', {
-  'Series': function (s) {
-    var arr = s.asSortedArray();
-    if(arr.length===0) return s;
-    
-    var ans = {};
-    var toStr_func = s.toStr_func();
-    var sup = arr[0][1];
-    for(var i=0; i<arr.length; i++) {
-      sup = Math.min(sup,arr[i][1]);
-      ans[toStr_func(arr[i][0])] = sup;
-    }
-    return make_series(ans);
-  },
-});
-
-
 // dateFunc converts the date into categories
 // this function returns a new series where the dates are the same as in series
 // the values are averaged within each category
@@ -560,6 +527,38 @@ var avgFunc = math.typed('avg',{
   },
   'Series': function(s) {
     return constructAvg(s.cumgenerator(),s.toStr_func());
+  },
+});
+
+function constructMax(generator,toStr_func) {
+  var calcFunc = function(values) {
+    return _.max(values);
+  };
+  return funcOnGenerator(generator,calcFunc,toStr_func);
+}
+
+var maxCumFunc = math.typed('max_cum', {
+  'Series, number': function(s,w) {
+    return constructMax(s.subgenerator(w),s.toStr_func());
+  },
+  'Series': function(s) {
+    return constructMax(s.cumgenerator(),s.toStr_func());
+  },
+});
+
+function constructMin(generator,toStr_func) {
+  var calcFunc = function(values) {
+    return _.min(values);
+  };
+  return funcOnGenerator(generator,calcFunc,toStr_func);
+}
+
+var minCumFunc = math.typed('min_cum', {
+  'Series, number': function(s,w) {
+    return constructMin(s.subgenerator(w),s.toStr_func());
+  },
+  'Series': function(s) {
+    return constructMin(s.cumgenerator(),s.toStr_func());
   },
 });
 
@@ -989,8 +988,8 @@ var to_import = {
   ind: indFunc,
   last: lastFunc,
   first: firstFunc,
-  sup: supFunc,
-  inf: infFunc,
+  max_cum: maxCumFunc,
+  min_cum: minCumFunc,
 
   std: stdFunc,
   avg: avgFunc,
