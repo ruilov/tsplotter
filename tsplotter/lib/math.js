@@ -3,6 +3,7 @@
  * RLV: node code in parseAccessors (search for _dict)
  * RLV: added syntactic sugar capability. Module 492. Searching for 'syntactic' will reveal all changes
  * RLV: implemented a state stack in the parsing module to make syntactic sugar work properly. Search for state_stack
+ * RLV: fixed the min/max functions. Search for 'min', 'max' or RLV
  *
  * math.js
  * https://github.com/josdejong/mathjs
@@ -34932,7 +34933,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      try {
-	        return max.apply(null, args);
+			// RLV: previously it was just min.apply, but that doesn't pick-up the Series related signatures
+	        return math.max.apply(null, args);
 	      }
 	      catch (err) {
 	        throw errorTransform(err);
@@ -35877,7 +35879,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      try {
-	        return min.apply(null, args);
+			// RLV: previously it was just min.apply, but that doesn't pick-up the Series related signatures
+	        return math.min.apply(null, args);
 	      }
 	      catch (err) {
 	        throw errorTransform(err);

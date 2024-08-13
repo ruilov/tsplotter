@@ -359,7 +359,7 @@ var subtractFunc = math.typed('subtract', {
   },
 });
 
-var greaterFunc = math.typed('greater', {
+var maxFunc = math.typed('max', {
   'Series, number': function (a, b) {
     var ans = {};
     for(var dt in a.map) ans[dt] = Math.max(a.map[dt],b);
@@ -376,7 +376,7 @@ var greaterFunc = math.typed('greater', {
   },
 });
 
-var lesserFunc = math.typed('lesser', {
+var minFunc = math.typed('min', {
   'Series, number': function (a, b) {
     var ans = {};
     for(var dt in a.map) ans[dt] = Math.min(a.map[dt],b);
@@ -982,8 +982,8 @@ var to_import = {
   pow: powFunc,
   add: addFunc,
   subtract: subtractFunc,
-  greater: greaterFunc,
-  lesser: lesserFunc,
+  max: maxFunc,
+  min: minFunc,
   abs: absFunc,
   log: logFunc,
   ind: indFunc,
