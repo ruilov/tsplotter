@@ -7,6 +7,7 @@ class Evaluator {
       "STOCK": "close",
       "CRYPTO": "Value",
       "FRED": "Value",
+      "FRED_OLD": "Value",
       "BCHAIN": "Value",
     };
   }
@@ -347,14 +348,10 @@ class Evaluator {
     return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
   }
 
-  fred_url(symbol) {
+  fred_url(symbol,version) {
     var ticker = symbol.split("|")[1];  // guarantee to start with FRED|
-    // work around for CORS
-    // var url = "https://cors-anywhere.herokuapp.com/https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
-    var url = "https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
-    // var url = "http://www.whateverorigin.org/get?url=" + encodeURIComponent(url_raw);
-    // console.log(url);
-
+    var url = "https://api-proxy-y8ap.onrender.com/proxy/fred/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
+    if(version == "old") url = "https://api.stlouisfed.org/fred/series/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
     if (this.start_text.length > 0) url += "&observation_start=" + this.start_text;
     if (this.end_text.length > 0) url += "&observation_end=" + this.end_text;
     return url;
@@ -386,8 +383,9 @@ class Evaluator {
         console.log("calling: " + url);
         $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       } 
-      else if(symbol.startsWith("FRED|")) {
-        var url = this.fred_url(symbol);
+      else if(symbol.startsWith("FRED|") || symbol.startsWith("FRED_OLD|")) {
+        var version = symbol.startsWith("FRED_OLD|") ? "old" : "new";
+        var url = this.fred_url(symbol,version);
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
         $.getJSON(url, this.fred_success_cb(symbol)).error(this.data_source_error_cb(symbol));
