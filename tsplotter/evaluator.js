@@ -3,7 +3,9 @@ class Evaluator {
   static get db_default_tags() {
     return {
       "CME": "Value",
+      "CME_OLD": "Value",
       "ICE": "Value",
+      "ICE_OLD": "Value",
       "STOCK": "close",
       "CRYPTO": "Value",
       "FRED": "Value",
@@ -310,11 +312,13 @@ class Evaluator {
     // ICE docs: https://data.nasdaq.com/databases/MWIS
     // CME docs: https://data.nasdaq.com/databases/MWCS
     var url = "https://data.nasdaq.com/api/v3/datatables/"
-    if(db=="ICE") {
+    if(db=="ICE" || db=="CME") url = "https://api-proxy-y8ap.onrender.com/proxy/cme/";
+
+    if(db=="ICE" || db=="ICE_OLD") {  
       if(metadata) url += "AR/MWIF/?";
       else url += "AR/MWIS/?";
     }
-    else if(db=="CME") {
+    else if(db=="CME" || db=="CME_OLD") {
       if(metadata) url += "AR/MWCF/?";
       else url += "AR/MWCS/?";
     }
@@ -325,7 +329,7 @@ class Evaluator {
     // note that quandl (now nasdaq) has a new way of organizing data. 'code' is not alawys the right parameter to use, but I'm leaving it
     // in for now since quandl has so little free data left anyway
     url += "code=" + code;
-    if(db=="ICE" || db=="CME") url +="_S"
+    if(db=="ICE" || db=="CME" || db=="ICE_OLD" || db=="CME_OLD") url +="_S"
     url += "&api_key=" + thePage.get_key("quandl_cme");
 
     if(!metadata) {
@@ -560,7 +564,7 @@ class Evaluator {
       }
 
       var db = symbol.split("|")[0];
-      if(db=="ICE" || db=="CME") {
+      if(db=="ICE" || db=="CME" || db == "ICE_OLD" || db == "CME_OLD") {
         // get the metadata for this symbol, which will have the description of it
         var url = tt.quandl_url(symbol,/*metadata*/ true);
         if (!url) return; // means we couldn't parse the symbol
