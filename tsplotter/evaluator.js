@@ -347,9 +347,9 @@ class Evaluator {
     return "https://api.coingecko.com/api/v3/coins/" + ticker + "/market_chart/range?vs_currency=usd&from=" + sd + "&to=" + ed;
   }
 
-  alphaadv_url(symbol) {
+  twelvedata_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
-    return "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + ticker + "&outputsize=full&apikey=" + thePage.get_key("alphaadvantage");
+    return "https://api.twelvedata.com/time_series?symbol=" + ticker + "&interval=1day&outputsize=5000&apikey=" + thePage.get_key("twelvedata");
   }
 
   fred_url(symbol,version) {
@@ -381,12 +381,12 @@ class Evaluator {
       if (this.is_symbol_cached(symbol)) continue;
 
       if(symbol.startsWith("STOCK|")) {
-        // this uses a special service
-        var url = this.alphaadv_url(symbol);
+        // this uses TwelveData API
+        var url = this.twelvedata_url(symbol);
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
-        $.getJSON(url, this.alphaadv_success_cb(symbol)).error(this.data_source_error_cb(symbol));
-      } 
+        $.getJSON(url, this.twelvedata_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      }
       else if(symbol.startsWith("FRED|") || symbol.startsWith("FRED_OLD|")) {
         var version = symbol.startsWith("FRED_OLD|") ? "old" : "new";
         var url = this.fred_url(symbol,version);
@@ -447,30 +447,40 @@ class Evaluator {
     };
   }
 
-  alphaadv_success_cb(symbol) {
+  twelvedata_success_cb(symbol) {
     var tt = this;
     return function(retVal) {
-      if("Error Message" in retVal) {
+      if(retVal.status && retVal.status === "error") {
         console.log(retVal);
-        tt.error_messages.push(symbol + ": " + retVal["Error Message"]);
+        var errMsg = retVal.message || "Unknown error from TwelveData API";
+        tt.error_messages.push(symbol + ": " + errMsg);
         tt.error_fn();
         return;
       }
 
-      if(!("Time Series (Daily)" in retVal)) {
-        var errMsg = "The alpha Vantage stock database (https://www.alphavantage.co) returned an error.";
-        if("Information" in retVal) errMsg += "<br>" + retVal.Information+"<br>";
+      if(!retVal.values || !Array.isArray(retVal.values) || retVal.values.length === 0) {
+        var errMsg = "The TwelveData API (https://twelvedata.com) returned no data or an unexpected format.";
+        if(retVal.message) errMsg += "<br>" + retVal.message + "<br>";
         console.log(retVal);
         tt.error_messages.push(symbol + ": " + errMsg);
         tt.error_fn();
         return;
       }
 
-      var dataset = retVal["Time Series (Daily)"];
-      var col_names = Object.keys(Object.values(dataset)[0]).map(x => x.split(".")[1].trim());
+      // Convert TwelveData array format to object format (date-keyed structure)
+      var dataset = {};
+      var col_names = Object.keys(retVal.values[0]).filter(k => k !== "datetime");
+
+      for(var item of retVal.values) {
+        var dateStr = item.datetime.split(" ")[0]; // Extract just the date part
+        dataset[dateStr] = {};
+        for(var colName of col_names) {
+          dataset[dateStr][colName] = item[colName];
+        }
+      }
 
       tt.cached_datasets[symbol] = dataset;
-      tt.cached_datasets[symbol].name = symbol; // used to create the legend in the plot
+      tt.cached_datasets[symbol].name = symbol;
       tt.cached_datasets[symbol].start = new Date(-8640000000000000);
       tt.cached_datasets[symbol].end = new Date(8640000000000000);
 
@@ -483,11 +493,9 @@ class Evaluator {
         count += 1;
         if(dateStr=="data2" || dateStr=="start" || dateStr=="end" || dateStr=="name") continue;
 
-        for(var rawCol in dataset[dateStr]) {
-          var val = parseFloat(dataset[dateStr][rawCol]);
-          var colName = rawCol.split(".")[1].trim();
+        for(var colName in dataset[dateStr]) {
+          var val = parseFloat(dataset[dateStr][colName]);
 
-          // this is a performance optimization. For some reason Series.put is slow!
           if(count==1)
             tt.cached_datasets[symbol].data2[colName].put(dateStr,val);
           else
