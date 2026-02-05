@@ -349,6 +349,8 @@ class Evaluator {
 
   twelvedata_url(symbol) {
     var ticker = symbol.split("|")[1];  // guarantee to start with STOCK|
+    // Replace underscore with forward slash for forex pairs (e.g., USD_BRL -> USD/BRL)
+    ticker = ticker.replace(/_/g, "/");
     return "https://api.twelvedata.com/time_series?symbol=" + ticker + "&interval=1day&outputsize=5000&apikey=" + thePage.get_key("twelvedata");
   }
 
