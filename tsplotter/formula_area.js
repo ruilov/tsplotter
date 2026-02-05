@@ -1,6 +1,6 @@
 class FormulaArea {
 
-  // ===== CONSTRUCTION ======
+  // ===== CONSTRUCTION ====== 
   constructor() {
     $("#formula_area").cleditor({
       controls: 'color',
