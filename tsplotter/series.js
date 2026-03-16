@@ -457,7 +457,7 @@ function dateBasedAvg(series,dateFunc) {
     for(var dt in series.map) {
       var cat = dateFunc(dt);
       if(!(cat in values)) values[cat] = [];
-      values[cat].push(series.map[dt])
+      if(!isNaN(series.map[dt])) values[cat].push(series.map[dt]);
     };
 
     var avgs = {};

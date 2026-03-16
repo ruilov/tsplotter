@@ -301,6 +301,23 @@ function run_tests() {
   var a2 = math.avg(s2,3);
   if(!series_equal(a2,e2)) throw "series test failure";
 
+  // yearlyAvg/monthlyAvg should ignore NaNs but preserve all-NaN buckets as NaN
+  var s3 = new Series();
+  s3.put("2016-01-01",10);s3.put("2016-06-01",NaN);s3.put("2016-12-01",20);s3.put("2017-01-01",NaN);
+
+  var e3 = new Series();
+  e3.put("2016-01-01",15);e3.put("2016-06-01",15);e3.put("2016-12-01",15);e3.put("2017-01-01",NaN);
+  var a3 = math.yearlyAvg(s3);
+  if(!series_equal(a3,e3)) throw "series test failure";
+
+  var s4 = new Series();
+  s4.put("2016-01-01",10);s4.put("2016-01-15",NaN);s4.put("2016-01-20",20);s4.put("2016-02-01",NaN);
+
+  var e4 = new Series();
+  e4.put("2016-01-01",15);e4.put("2016-01-15",15);e4.put("2016-01-20",15);e4.put("2016-02-01",NaN);
+  var a4 = math.monthlyAvg(s4);
+  if(!series_equal(a4,e4)) throw "series test failure";
+
   // cum
   var e1 = new Series();
   e1.put("0",0);e1.put("1",10);e1.put("2",30);e1.put("3",60);
