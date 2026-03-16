@@ -227,23 +227,23 @@ function run_tests() {
   temp2.put("0",-2);temp2.put("1",4)
   var e1 = new Series();
   e1.put("0",2);e1.put("1",4);
-  var a1 = math.greater(temp1,temp2);
+  var a1 = math.max(temp1,temp2);
   if(!series_equal(a1,e1)) throw "series test failure";
 
-  var a1 = math.eval("greater(a,b)", {"a": temp1, "b": temp2});
+  var a1 = math.eval("max(a,b)", {"a": temp1, "b": temp2});
   if(!series_equal(a1,e1)) throw "series test failure";
 
   var e1 = new Series();
   e1.put("0",2.5);e1.put("1",3);e1.put("2",3);
-  var a1 = math.greater(temp1,2.5);
+  var a1 = math.max(temp1,2.5);
   if(!series_equal(a1,e1)) throw "series test failure";
 
   var e1 = new Series();
   e1.put("0",-2);e1.put("1",3);
-  var a1 = math.lesser(temp1,temp2);
+  var a1 = math.min(temp1,temp2);
   if(!series_equal(a1,e1)) throw "series test failure";
 
-  var a1 = math.eval("lesser(a,b)", {"a": temp1, "b": temp2});
+  var a1 = math.eval("min(a,b)", {"a": temp1, "b": temp2});
   if(!series_equal(a1,e1)) throw "series test failure";
 
   // sup,inf
