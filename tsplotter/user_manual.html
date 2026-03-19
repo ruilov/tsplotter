@@ -41,6 +41,8 @@
 
           <li><b>STOCK</b>: for stock prices and forex pairs, <b>tsplotter</b> uses <a href="https://twelvedata.com/">TwelveData</a>. Example symbols: <code>STOCK|SPY</code> (stock) and <code>STOCK|USD_BRL</code> (forex, use underscore for pairs like USD/BRL or EUR/USD). The default series is <code>close</code>. Other returned fields can be accessed with bracket notation, for example <code>STOCK|SPY["open"]</code>, <code>STOCK|SPY["high"]</code>, <code>STOCK|SPY["low"]</code>, <code>STOCK|SPY["close"]</code>, and <code>STOCK|SPY["volume"]</code>.
 
+          <li><b>BAR</b>: <a href="https://www.barchart.com/">Barchart</a> daily futures data. Use <code>BAR|CLM26</code> for a specific contract and <code>BAR|CL_3</code> for a nearby/continuous contract. The default series is <code>close</code>, and explicit field access uses bracket notation, for example <code>BAR|CLM26["close"]</code>. Also available: open, high, low, volume., openInterest.
+
           <li><a href="https://fred.stlouisfed.org/">FRED</a>: use symbols such as <code>FRED|UNRATE</code>. The default series is <code>Value</code>.
 
           <li><a href="https://www.coingecko.com/en/api#explore-api/">Crypto</a>: use symbols such as <code>CRYPTO|bitcoin</code>, <code>CRYPTO|ethereum</code>, or <code>CRYPTO|dogecoin</code>. A full list of coins is available <a href="https://api.coingecko.com/api/v3/coins/list">here</a> (use the <code>id</code> field). The default series is <code>Value</code>.

@@ -7,6 +7,7 @@ class Evaluator {
       "ICE": "Value",
       "ICE_OLD": "Value",
       "STOCK": "close",
+      "BAR": "close",
       "CRYPTO": "Value",
       "FRED": "Value",
       "FRED_OLD": "Value",
@@ -354,6 +355,28 @@ class Evaluator {
     return "https://api.twelvedata.com/time_series?symbol=" + ticker + "&interval=1day&outputsize=5000&apikey=" + thePage.get_key("twelvedata");
   }
 
+  barchart_url(symbol) {
+    if (symbol.indexOf("|") < 0) {
+      this.error_messages.push(symbol + ": malformed database symbol");
+      this.error_fn();
+      return null;
+    }
+
+    var ticker = symbol.split("|")[1];
+    if (!ticker) {
+      this.error_messages.push(symbol + ": malformed database symbol");
+      this.error_fn();
+      return null;
+    }
+
+    var data = ticker.indexOf("_") >= 0 ? "dailyNearest" : "daily";
+    var barchart_symbol = ticker.replace(/_/g, "*");
+    var day_count = Math.floor((this.end - this.start) / 86400000) + 1;
+    var maxrecords = Math.max(1, day_count);
+
+    return "https://api-proxy-y8ap.onrender.com/proxy/barchart?symbol=" + encodeURIComponent(barchart_symbol) + "&data=" + data + "&maxrecords=" + maxrecords;
+  }
+
   fred_url(symbol,version) {
     var ticker = symbol.split("|")[1];  // guarantee to start with FRED|
     var url = "https://api-proxy-y8ap.onrender.com/proxy/fred/observations?series_id=" + ticker + "&api_key=" + thePage.get_key("fred") + "&file_type=json";
@@ -388,6 +411,12 @@ class Evaluator {
         if (!url) return; // means we couldn't parse the symbol
         console.log("calling: " + url);
         $.getJSON(url, this.twelvedata_success_cb(symbol)).error(this.data_source_error_cb(symbol));
+      }
+      else if(symbol.startsWith("BAR|")) {
+        var url = this.barchart_url(symbol);
+        if (!url) return; // means we couldn't parse the symbol
+        console.log("calling: " + url);
+        $.getJSON(url, this.barchart_success_cb(symbol)).error(this.data_source_error_cb(symbol));
       }
       else if(symbol.startsWith("FRED|") || symbol.startsWith("FRED_OLD|")) {
         var version = symbol.startsWith("FRED_OLD|") ? "old" : "new";
@@ -505,6 +534,80 @@ class Evaluator {
         }
       }
 
+      tt.eval_fn();
+    };
+  }
+
+  barchart_success_cb(symbol) {
+    var tt = this;
+    return function(retVal) {
+      if(!retVal.series || !Array.isArray(retVal.series) || retVal.series.length === 0) {
+        var errMsg = "The Barchart proxy returned no data or an unexpected format.";
+        if(retVal.message) errMsg += "<br>" + retVal.message + "<br>";
+        console.log(retVal);
+        tt.error_messages.push(symbol + ": " + errMsg);
+        tt.error_fn();
+        return;
+      }
+
+      var dataset = retVal.series;
+      var col_names = [];
+      var seen_cols = {};
+      for(var item of dataset) {
+        for(var key in item) {
+          if(key === "date" || seen_cols[key]) continue;
+          seen_cols[key] = true;
+          col_names.push(key);
+        }
+      }
+
+      if(col_names.length === 0) {
+        tt.error_messages.push(symbol + ": The Barchart proxy returned no series fields.");
+        tt.error_fn();
+        return;
+      }
+
+      tt.cached_datasets[symbol] = {};
+      tt.cached_datasets[symbol].name = symbol;
+      tt.cached_datasets[symbol].data2 = {};
+
+      var initialized = {};
+      for(var cn of col_names) {
+        tt.cached_datasets[symbol].data2[cn] = new Series();
+        initialized[cn] = false;
+      }
+
+      var min_date = null;
+      var max_date = null;
+      for(var item of dataset) {
+        if(!item.date) continue;
+        var dt = parseDate(item.date);
+        if(min_date === null || dt < min_date) min_date = dt;
+        if(max_date === null || dt > max_date) max_date = dt;
+
+        for(var colName of col_names) {
+          if(!(colName in item)) continue;
+          var val = parseFloat(item[colName]);
+          if(!isFinite(val)) continue;
+
+          if(!initialized[colName]) {
+            tt.cached_datasets[symbol].data2[colName].put(item.date, val);
+            initialized[colName] = true;
+          }
+          else {
+            tt.cached_datasets[symbol].data2[colName].map[item.date] = val;
+          }
+        }
+      }
+
+      if(min_date === null || max_date === null) {
+        tt.error_messages.push(symbol + ": The Barchart proxy returned malformed date data.");
+        tt.error_fn();
+        return;
+      }
+
+      tt.cached_datasets[symbol].start = Math.min(min_date, tt.start);
+      tt.cached_datasets[symbol].end = Math.max(max_date, tt.end);
       tt.eval_fn();
     };
   }
