@@ -21,13 +21,11 @@
         <h1><center id="overview">Overview</center></h1>
         <b>tsplotter</b> is a tool that allows intuitive and interactive manipulation of data. If you'd like to jump right in, see the <a href="#examples">examples</a> section.
         <br><br>
-        Some data sources require the following Chrome extension: <a href="https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino?hl=en">CORS Unblock</a>
-        <br><br>
         Please email me at <a href="mailto:ruilov@gmail.com">ruilov@gmail.com</a> for questions or comments. Testing and support done primarily in Mac + Chrome.
         <br><br>
         <b>tsplotter</b> includes:
         <ul>
-          <li>connectivity to external <a href="#quandl">databases</a>, with a lot of historical data: stocks, interest rates, commodities, financials, economic.
+          <li>connectivity to external <a href="#data">databases</a>, with a lot of historical data: stocks, interest rates, commodities, financials, economic.
           <li>a simple <a href="#send">publishing mechanism</a> for your plots.</li>
           <li>a concise python API.</li>
           <li>built-in <a href="#functions">quantitative features</a>: correlation, volatility, trends, etc.</li>
@@ -39,28 +37,29 @@
         There's a few methods to get data into <b>tsplotter</b>
 
         <ul>
-          <li><b>STOCK</b>: for stock prices and forex pairs (e.g., STOCK|USD_BRL for USD/BRL), <b>tsplotter</b> uses <a href="https://twelvedata.com/">TwelveData</a>. Example symbols: STOCK|SPY (stocks), STOCK|USD_BRL (forex - use underscore for currency pairs like USD/BRL, EUR/USD). This will plot the "close" series. Other series available are: open, high, low, close, volume.
+          <li><b>External APIs</b> use symbols of the form <code>PREFIX|CODE</code>.
 
-          <li><b>CME and ICE</b>: example symbols are CME|NYM_CL_Z2024 or ICE|ICEF_SF3_U2024.
+          <li><b>STOCK</b>: for stock prices and forex pairs, <b>tsplotter</b> uses <a href="https://twelvedata.com/">TwelveData</a>. Example symbols: <code>STOCK|SPY</code> (stock) and <code>STOCK|USD_BRL</code> (forex, use underscore for pairs like USD/BRL or EUR/USD). The default series is <code>close</code>. Other returned fields can be accessed with bracket notation, for example <code>STOCK|SPY["open"]</code>, <code>STOCK|SPY["high"]</code>, <code>STOCK|SPY["low"]</code>, <code>STOCK|SPY["close"]</code>, and <code>STOCK|SPY["volume"]</code>.
 
-          <li><a href="https://fred.stlouisfed.org/">FRED</a>:  example symbol FRED|UNRATE. I'm experimenting with a CORS proxy server, which this uses as FRED doesn't allow CORS. If this server stops working, for now you can still use FRED_OLD as long as you have a browser extension to bypass CORS
+          <li><a href="https://fred.stlouisfed.org/">FRED</a>: use symbols such as <code>FRED|UNRATE</code>. The default series is <code>Value</code>.
 
-          <li><a href="https://www.coingecko.com/en/api#explore-api/">Crypto</a>: database of crypto prices. A full list of coins is available <a href="https://api.coingecko.com/api/v3/coins/list">here</a> (use the 'id' field), but you can get all the usual ones easily with CRYPTO|bitcoin, CRYPTO|ethereum, CRYPTO|ripple, CRYPTO|dogecoin, etc
+          <li><a href="https://www.coingecko.com/en/api#explore-api/">Crypto</a>: use symbols such as <code>CRYPTO|bitcoin</code>, <code>CRYPTO|ethereum</code>, or <code>CRYPTO|dogecoin</code>. A full list of coins is available <a href="https://api.coingecko.com/api/v3/coins/list">here</a> (use the <code>id</code> field). The default series is <code>Value</code>.
 
-          <li><a href="https://data.nasdaq.com/">Nasdaq Data Link</a>: used to offer much more data, now only some. Example: BCHAIN|HRATE    
-              
-          <li><b>Copy-paste</b>: you can simply copy-paste data from excel with ctrl-v. The data has to be formatted as columns, where the first column holds the dates and the first row holds the headers. The headers determine the name of each series in <b>tsplotter</b></li>
+          <li><b>CME and ICE</b>: use symbols such as <code>CME|NYM_CL_Z2024</code> or <code>ICE|ICEF_SF3_U2024</code>. These use the special Nasdaq Data Link routes handled by <b>tsplotter</b>. The default series is <code>Value</code>.
+
+          <li><a href="https://data.nasdaq.com/">Nasdaq Data Link</a>: other supported datasets can also be used with symbols of the form <code>DATABASE|CODE</code>, for example <code>BCHAIN|HRATE</code>. Availability is limited and depends on what Nasdaq Data Link still exposes. The default series is <code>Value</code>.
         </ul>
       <br>
 
       <h1><center id="commands">Commands</center></h1>
       
       <ul>
-        <li><b>Plot</b>: F9. Evaluates and plots your formulas.</li>
-        <li><b>Copy data</b>: CTRL-ALT-C. Replots and copies the results to the clipboard.</li>
+          <li><b>Plot</b>: F9. Evaluates and plots your formulas.</li>
+          <li><b>Paste data</b>: CTRL-V. You can paste data directly from Excel or similar tools. Format it as columns, with dates in the first column and headers in the first row. The headers determine the name of each series in <b>tsplotter</b>.</li>
+          <li><b>Copy data</b>: CTRL-ALT-C. Replots and copies the results to the clipboard.</li>
         <li><b>Turn off a formula</b>: CTRL+B. The formula won't be evaluated at all.</li>
         <li><b>Hide a formula</b>: CTRL+H. The formula will still be evaluated, but not shown. Useful for formulas that define new symbols.</li>
-        <li><b>Toggle secondary axis for a formula</b>: CTRL+T.</li>
+        <li><b>Toggle secondary axis for a formula</b>: Tab.</li>
         <li><b>Clear colors</b>: CTRL-ALT-V. New colors will be assigned on a new F9.</li>
         <li><b>Manually color a formula</b>: use the color wheel.</li>
       </ul>
@@ -78,7 +77,7 @@
       <ul>
         <li>the usual arithmetic operators <code>+, -, *, /, ^</code> are used for adding, subtracting, multiplying, dividing, exponentiating a series by another, or by a number. Only x coordinates that appear in both series are used.</li>
 
-        <li>Create your own  symbols using <code>=</code>. Those symbols can be used in latter formulas in the same plot. For example: <code>a = WIKI|AAPL + 1</code>.</li>
+        <li>Create your own  symbols using <code>=</code>. Those symbols can be used in latter formulas in the same plot. For example: <code>a = STOCK|SPY + 1</code>.</li>
 
         <li>a number represents a series of constant value (with every x coordinate).</li>
 
@@ -144,7 +143,7 @@
 
         <li><code>strip(string,string,number)</code>: calculates the strip of a commodity. The arguments are: root symbol, start month, number of months. For example: strip("CME|CL","F2020",3) will calculate (CME|CLF2020 + CME|CLG2020 + CME|CLH2020)/3. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most.</li>
 
-        <li><code>nrby_strip(string,number,number)</code>: similarly to 'strip', calculates the strip of a commodity. However the symbols used here are continuous futures symbols. For example: strip("CHRIS|CME_CL",2,3) will calculate (CHRIS|CME_CL2 + CHRIS|CME_CL3 + CHRIS|CME_CL4)/3. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most.</li>
+        <li><code>nrby_strip(string,number,number)</code>: similarly to 'strip', calculates the strip of a commodity. However the symbols used here are continuous futures symbols. For example: <code>nrby_strip("CHRIS|CME_CL",2,3)</code> will calculate <code>(CHRIS|CME_CL2 + CHRIS|CME_CL3 + CHRIS|CME_CL4)/3</code>. Please note that because this function will load many symbols at once, the number of months should be kept to 12 at most.</li>
       </ul>
 
       <br>
