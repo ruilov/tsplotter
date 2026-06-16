@@ -246,17 +246,17 @@ function run_tests() {
   var a1 = math.eval("min(a,b)", {"a": temp1, "b": temp2});
   if(!series_equal(a1,e1)) throw "series test failure";
 
-  // sup,inf
+  // max_cum,min_cum
   var temp1 = new Series();
   temp1.put("0",10);temp1.put("1",5);temp1.put("2",20);temp1.put("3",2);
   var e1 = new Series();
   e1.put("0",10);e1.put("1",10);e1.put("2",20);e1.put("3",20);
-  var a1 = math.sup(temp1);
+  var a1 = math.max_cum(temp1);
   if(!series_equal(a1,e1)) throw "series test failure";
 
   var e1 = new Series();
   e1.put("0",10);e1.put("1",5);e1.put("2",5);e1.put("3",2);
-  var a1 = math.inf(temp1);
+  var a1 = math.min_cum(temp1);
   if(!series_equal(a1,e1)) throw "series test failure";
 
   // std
