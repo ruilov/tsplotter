@@ -1525,8 +1525,8 @@ $.fn.layout = function (opts) {
 		// bind hotkey function - keyDown - if required
 		initHotkeys();
 
-		// bind window.onunload
-		$(window).bind("unload."+ sID, unload);
+		// bind pagehide cleanup without relying on the deprecated unload event
+		$(window).bind("pagehide."+ sID, unload);
 
 		// init plugins for this layout, if there are any (eg: customButtons)
 		runPluginCallbacks( Instance, $.layout.onLoad );
