@@ -1052,6 +1052,41 @@ math.import(to_import);
 *
 *********************************************************/
 
+function barchart_symbol_encode(symbol) {
+  if(typeof symbol != "string") throw "bar(symbol) requires a string symbol";
+
+  var encoded = "";
+  for(var i=0; i<symbol.length; i++) {
+    var hex = symbol.charCodeAt(i).toString(16).toUpperCase();
+    while(hex.length < 4) hex = "0" + hex;
+    encoded += hex;
+  }
+  return "BARHEX_" + encoded;
+}
+
+function barchart_symbol_decode(symbol) {
+  var prefix = "BARHEX_";
+  if(symbol.indexOf(prefix) !== 0) return symbol;
+
+  var encoded = symbol.substr(prefix.length);
+  if(encoded.length % 4 !== 0) throw "Invalid Barchart encoded symbol: " + symbol;
+
+  var decoded = "";
+  for(var i=0; i<encoded.length; i+=4) {
+    var code = parseInt(encoded.substr(i,4),16);
+    if(isNaN(code)) throw "Invalid Barchart encoded symbol: " + symbol;
+    decoded += String.fromCharCode(code);
+  }
+  return decoded;
+}
+
+var bar_func = function(symbol) {
+  if(arguments.length != 1) throw "bar(symbol) requires exactly one argument";
+  return "BAR|" + barchart_symbol_encode(symbol);
+};
+
+math.import_syntactic_sugar("bar", bar_func);
+
 var strip_func = function(root,start_month,num_months) {
   var month_codes = ['F','G','H','J','K','M','N','Q','U','V','X','Z'];
   var month_letter = start_month.substring(0,1);

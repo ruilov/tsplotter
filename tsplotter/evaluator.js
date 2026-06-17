@@ -355,26 +355,38 @@ class Evaluator {
     return "https://api.twelvedata.com/time_series?symbol=" + ticker + "&interval=1day&outputsize=5000&apikey=" + thePage.get_key("twelvedata");
   }
 
-  barchart_url(symbol) {
+  barchart_ticker(symbol) {
     if (symbol.indexOf("|") < 0) {
       this.error_messages.push(symbol + ": malformed database symbol");
       this.error_fn();
       return null;
     }
 
-    var ticker = symbol.split("|")[1];
+    var ticker = symbol.substr(symbol.indexOf("|") + 1);
     if (!ticker) {
       this.error_messages.push(symbol + ": malformed database symbol");
       this.error_fn();
       return null;
     }
 
-    var data = ticker.indexOf("_") >= 0 ? "dailyNearest" : "daily";
-    var barchart_symbol = ticker.replace(/_/g, "*");
+    try {
+      return barchart_symbol_decode(ticker);
+    } catch(err) {
+      this.error_messages.push(symbol + ": " + err.toString());
+      this.error_fn();
+      return null;
+    }
+  }
+
+  barchart_url(symbol) {
+    var ticker = this.barchart_ticker(symbol);
+    if (!ticker) return null;
+
+    var data = ticker.indexOf("*") >= 0 ? "dailyNearest" : "daily";
     var day_count = Math.floor((this.end - this.start) / 86400000) + 1;
     var maxrecords = Math.max(1, day_count);
 
-    return "https://api-proxy-y8ap.onrender.com/proxy/barchart?symbol=" + encodeURIComponent(barchart_symbol) + "&data=" + data + "&maxrecords=" + maxrecords;
+    return "https://api-proxy-y8ap.onrender.com/proxy/barchart?symbol=" + encodeURIComponent(ticker) + "&data=" + data + "&maxrecords=" + maxrecords;
   }
 
   fred_url(symbol,version) {
@@ -568,7 +580,8 @@ class Evaluator {
       }
 
       tt.cached_datasets[symbol] = {};
-      tt.cached_datasets[symbol].name = symbol;
+      var ticker = tt.barchart_ticker(symbol);
+      tt.cached_datasets[symbol].name = ticker ? "BAR|" + ticker : symbol;
       tt.cached_datasets[symbol].data2 = {};
 
       var initialized = {};
@@ -723,3 +736,38 @@ function rgb2hex(rgb) {
   function hex(x) {return ("0" + parseInt(x).toString(16)).slice(-2);}
   return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
 }
+
+function run_evaluator_tests() {
+  var depEvaluator = {
+    formula_area: {parsed_formulas: [{text: 'bar("$VIX")["close"]'}]},
+    parse_formula: Evaluator.prototype.parse_formula,
+    symbol_nodes: Evaluator.prototype.symbol_nodes
+  };
+  var deps = Object.getOwnPropertyDescriptor(Evaluator.prototype, "symbol_deps").get.call(depEvaluator);
+  if(deps.length != 1 || deps[0] != "BAR|" + barchart_symbol_encode("$VIX")) throw "evaluator test failure";
+
+  var testEvaluator = {
+    start: parseDate("2026-01-01"),
+    end: parseDate("2026-01-03"),
+    error_messages: [],
+    error_fn: function() {
+      throw "evaluator test failure: " + this.error_messages.join("\n");
+    },
+    barchart_ticker: Evaluator.prototype.barchart_ticker
+  };
+
+  var url = Evaluator.prototype.barchart_url.call(testEvaluator, "BAR|" + barchart_symbol_encode("$VIX"));
+  if(url.indexOf("symbol=%24VIX") < 0) throw "evaluator test failure";
+  if(url.indexOf("&data=daily&") < 0) throw "evaluator test failure";
+
+  url = Evaluator.prototype.barchart_url.call(testEvaluator, "BAR|" + barchart_symbol_encode("CL*2"));
+  if(url.indexOf("symbol=CL*2") < 0) throw "evaluator test failure";
+  if(url.indexOf("&data=dailyNearest&") < 0) throw "evaluator test failure";
+
+  url = Evaluator.prototype.barchart_url.call(testEvaluator, "BAR|CL_2");
+  if(url.indexOf("symbol=CL_2") < 0) throw "evaluator test failure";
+  if(url.indexOf("CL*2") >= 0) throw "evaluator test failure";
+  if(url.indexOf("&data=daily&") < 0) throw "evaluator test failure";
+}
+
+run_evaluator_tests();

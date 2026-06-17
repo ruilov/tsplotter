@@ -14,6 +14,14 @@ function series_equal(a,b) {
   return true;
 }
 
+function parsed_symbol_names(expr) {
+  return math.parse(expr,{"scope": {}}).filter(function(x) {
+    return x.isSymbolNode;
+  }).map(function(x) {
+    return x.name;
+  });
+}
+
 function run_tests() {
   var s1 = new Series();
   s1.put("0",0);s1.put("3",30);s1.put("1",10);s1.put("2",20);
@@ -28,6 +36,24 @@ function run_tests() {
   w2.put("2016-01-01",1);w2.put("2016-02-20",30);w2.put("2016-01-03",10);w2.put("2016-01-10",20);w2.put("2016-04-01",45);
   var t2 = new Series();
   t2.put("2016-01-01",5);t2.put("2016-01-10",25);t2.put("2016-02-20",15);t2.put("2016-03-01",55);t2.put("2016-04-01",60);
+
+  // barchart symbol syntactic sugar
+  var encodedVix = "BARHEX_0024005600490058";
+  if(barchart_symbol_encode("$VIX") != encodedVix) throw "series test failure";
+  if(barchart_symbol_decode(encodedVix) != "$VIX") throw "series test failure";
+
+  var names = parsed_symbol_names('bar("$VIX")');
+  if(names.length != 1 || names[0] != "BAR|" + encodedVix) throw "series test failure";
+
+  var encodedCl2 = "BARHEX_0043004C002A0032";
+  names = parsed_symbol_names('bar("CL*2")');
+  if(names.length != 1 || names[0] != "BAR|" + encodedCl2) throw "series test failure";
+
+  names = parsed_symbol_names('bar("$VIX")["close"]');
+  if(names.length != 1 || names[0] != "BAR|" + encodedVix + "_dict") throw "series test failure";
+
+  names = parsed_symbol_names("BAR|CL_2");
+  if(names.length != 1 || names[0] != "BAR|CL_2") throw "series test failure";
 
   // range
   var e1 = new Series();
